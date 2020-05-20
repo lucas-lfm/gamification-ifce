@@ -7,6 +7,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
 
 @Entity
 public class Aluno {
@@ -16,12 +18,16 @@ public class Aluno {
 	private Integer id;
 	
 	@Column(name = "matricula", nullable = false, unique = true)
+	@NotBlank
 	private Integer matricula;
 	
 	@Column(name = "nome", length = 100, nullable = false)
+	@NotBlank
 	private String nome;
 	
 	@Column(name = "email", length = 100, nullable = false, unique = true)
+	@Email 
+	@NotBlank
 	private String email;
 	
 	@Column(name = "telefone", length = 20, nullable = false)
