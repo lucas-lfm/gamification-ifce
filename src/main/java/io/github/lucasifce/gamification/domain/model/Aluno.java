@@ -15,11 +15,11 @@ public class Aluno {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
-	private Integer id;
+	private Long id;
 	
 	@Column(name = "matricula", nullable = false, unique = true)
 	@NotBlank
-	private Integer matricula;
+	private Long matricula;
 	
 	@Column(name = "nome", length = 100, nullable = false)
 	@NotBlank
@@ -37,7 +37,7 @@ public class Aluno {
 	@JoinColumn(name = "usuario_id")
 	private Usuario usuario;
 	
-	public Aluno(Integer id, Integer matricula, String nome, String email, String telefone, Usuario usuario) {
+	public Aluno(Long id, Long matricula, String nome, String email, String telefone, Usuario usuario) {
 		super();
 		this.id = id;
 		this.matricula = matricula;
@@ -47,7 +47,7 @@ public class Aluno {
 		this.usuario = usuario;
 	}
 
-	public Aluno(Integer matricula, String nome, String email, String telefone, Usuario usuario) {
+	public Aluno(Long matricula, String nome, String email, String telefone, Usuario usuario) {
 		super();
 		this.matricula = matricula;
 		this.nome = nome;
@@ -58,19 +58,19 @@ public class Aluno {
 	
 	public Aluno(){}
 
-	public Integer getId() {
+	public Long getId() {
 		return id;
 	}
 
-	public void setId(Integer id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 
-	public Integer getMatricula() {
+	public Long getMatricula() {
 		return matricula;
 	}
 
-	public void setMatricula(Integer matricula) {
+	public void setMatricula(Long matricula) {
 		this.matricula = matricula;
 	}
 

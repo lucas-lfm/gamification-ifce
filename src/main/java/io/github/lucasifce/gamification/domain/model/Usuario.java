@@ -6,23 +6,26 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 public class Usuario {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
-	private Integer id;
+	private Long id;
 	
 	@Column(name = "login", length = 60, nullable = false, unique = true)
 	private String login;
 	
+	@JsonIgnore
 	@Column(name = "senha", length = 100, nullable = false)
 	private String senha;
 	
 	@Column(name = "admin", nullable = false)
 	private boolean admin;
 	
-	public Usuario(Integer id, String login, String senha, boolean admin) {
+	public Usuario(Long id, String login, String senha, boolean admin) {
 		super();
 		this.id = id;
 		this.login = login;
@@ -39,11 +42,11 @@ public class Usuario {
 
 	public Usuario(){}
 
-	public Integer getId() {
+	public Long getId() {
 		return id;
 	}
 
-	public void setId(Integer id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 
