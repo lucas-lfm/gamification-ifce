@@ -18,7 +18,9 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import io.github.lucasifce.gamification.domain.model.Aluno;
+import io.github.lucasifce.gamification.domain.model.Usuario;
 import io.github.lucasifce.gamification.domain.repository.AlunosRepository;
+import io.github.lucasifce.gamification.domain.repository.UsuariosRepository;
 
 @RestController
 @RequestMapping("/api/alunos")
@@ -26,6 +28,9 @@ public class AlunoController {
 
 	@Autowired
 	private AlunosRepository alunosRepository;
+	
+	@Autowired
+	private UsuariosRepository usuariosRepository;
 	
 	@GetMapping
     //@ResponseStatus(HttpStatus.OK) - ja retorna por padrao o status OK se der certo
@@ -48,7 +53,10 @@ public class AlunoController {
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
 	public Aluno save(@RequestBody Aluno aluno) {
+		Usuario usuario = usuariosRepository.save(aluno.getUsuario());
+		aluno.setUsuario(usuario);
 		return alunosRepository.save(aluno);
+		//return aluno.getUsuario().toString();
 	}
 	
 	@DeleteMapping("{id}")
@@ -85,5 +93,4 @@ public class AlunoController {
 		
 		return ResponseEntity.notFound().build();
 	}*/
-	
 }

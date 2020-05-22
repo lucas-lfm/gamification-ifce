@@ -12,7 +12,8 @@ import javax.persistence.OneToOne;
 public class Professor {
 	
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "id")
 	private Long id;
 	
 	@Column(name = "nome", length = 100, nullable = false)
