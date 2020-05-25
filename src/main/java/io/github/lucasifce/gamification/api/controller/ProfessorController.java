@@ -13,6 +13,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
+import javax.validation.Valid;
+
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
@@ -46,14 +48,14 @@ public class ProfessorController {
     @PostMapping
     @ResponseStatus(CREATED)
     @Transactional
-    public Professor save(@RequestBody Professor professor){
+    public Professor save(@RequestBody @Valid Professor professor){
         Usuario usuario = usuariosRepository.save(professor.getUsuario());
         professor.setUsuario(usuario);
         return professoresRepository.save(professor);
     }
 
     @PutMapping("/{id}")
-    public Professor update(@RequestBody Professor professor, @PathVariable("id") Long id){
+    public Professor update(@RequestBody @Valid Professor professor, @PathVariable("id") Long id){
         return professoresRepository.findById(id)
                 .map(professorExistente -> {
                     professor.setId(professorExistente.getId());
@@ -63,7 +65,7 @@ public class ProfessorController {
     }
 
     @PutMapping("/usuario/{id}")
-    public void updateUsuarioProfessor(@RequestBody Usuario usuario, @PathVariable("id") Long id){/*Esse método pode ficar na usuario repositóry, depois refatorar*/
+    public void updateUsuarioProfessor(@RequestBody @Valid Usuario usuario, @PathVariable("id") Long id){/*Esse método pode ficar na usuario repositóry, depois refatorar*/
         usuariosRepository.findById(id)
                 .map(usuarioExistente -> {
                     usuario.setId(usuarioExistente.getId());
