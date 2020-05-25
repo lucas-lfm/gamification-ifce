@@ -55,7 +55,7 @@ public class AlunoController {
 	
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-  @Transactional
+    @Transactional
 	public Aluno save(@RequestBody @Valid Aluno aluno) {
 		Usuario usuario = usuariosRepository.save(aluno.getUsuario());
 		aluno.setUsuario(usuario);
