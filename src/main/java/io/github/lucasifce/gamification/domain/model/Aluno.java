@@ -7,6 +7,9 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 @Entity
 public class Aluno {
@@ -17,15 +20,19 @@ public class Aluno {
     private Long id;
 
     @Column(name = "matricula", nullable = false, unique = true)
+    @NotNull(message = "{campo.matricula.obrigatorio}")
     private Long matricula;
 
     @Column(name = "nome", length = 100, nullable = false)
+    @NotBlank(message = "{campo.nome.obrigatorio}")
     private String nome;
 
     @Column(name = "email", length = 100, nullable = false, unique = true)
+    @NotBlank(message = "{campo.email.obrigatorio}")
+    @Email(message = "{campo.email.invalido}")
     private String email;
-
-    @Column(name = "telefone", length = 20, nullable = false)
+    
+    @Column(name = "telefone", length = 20)
     private String telefone;
 
     @OneToOne
@@ -33,7 +40,6 @@ public class Aluno {
     private Usuario usuario;
 
     public Aluno(Long id, Long matricula, String nome, String email, String telefone, Usuario usuario) {
-        super();
         this.id = id;
         this.matricula = matricula;
         this.nome = nome;
