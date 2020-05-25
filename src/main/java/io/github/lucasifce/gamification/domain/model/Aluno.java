@@ -1,9 +1,5 @@
 package io.github.lucasifce.gamification.domain.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -13,9 +9,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 
 @Entity
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class Aluno {
 	
 	@Id
@@ -39,4 +32,98 @@ public class Aluno {
     @JoinColumn(name = "usuario_id")
     private Usuario usuario;
 
+    public Aluno(Long id, Long matricula, String nome, String email, String telefone, Usuario usuario) {
+        super();
+        this.id = id;
+        this.matricula = matricula;
+        this.nome = nome;
+        this.email = email;
+        this.telefone = telefone;
+        this.usuario = usuario;
+    }
+
+    public Aluno(Long matricula, String nome, String email, String telefone, Usuario usuario) {
+        super();
+        this.matricula = matricula;
+        this.nome = nome;
+        this.email = email;
+        this.telefone = telefone;
+        this.usuario = usuario;
+    }
+
+    public Aluno(){}
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Long getMatricula() {
+        return matricula;
+    }
+
+    public void setMatricula(Long matricula) {
+        this.matricula = matricula;
+    }
+
+    public String getNome() {
+        return nome;
+    }
+
+    public void setNome(String nome) {
+        this.nome = nome;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getTelefone() {
+        return telefone;
+    }
+
+    public void setTelefone(String telefone) {
+        this.telefone = telefone;
+    }
+
+    public Usuario getUsuario() {
+        return usuario;
+    }
+
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((id == null) ? 0 : id.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        Aluno other = (Aluno) obj;
+        if (id == null) {
+            if (other.id != null)
+                return false;
+        } else if (!id.equals(other.id))
+            return false;
+        return true;
+    }
+	
 }
