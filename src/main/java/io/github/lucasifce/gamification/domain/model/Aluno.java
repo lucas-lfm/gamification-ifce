@@ -12,117 +12,118 @@ import javax.persistence.OneToOne;
 public class Aluno {
 	
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
-	private Integer id;
-	
-	@Column(name = "matricula", nullable = false, unique = true)
-	private Integer matricula;
-	
-	@Column(name = "nome", length = 100, nullable = false)
-	private String nome;
-	
-	@Column(name = "email", length = 100, nullable = false, unique = true)
-	private String email;
-	
-	@Column(name = "telefone", length = 20, nullable = false)
-	private String telefone;
-	
-	@OneToOne
-	@JoinColumn(name = "usuario_id")
-	private Usuario usuario;
-	
-	public Aluno(Integer id, Integer matricula, String nome, String email, String telefone, Usuario usuario) {
-		super();
-		this.id = id;
-		this.matricula = matricula;
-		this.nome = nome;
-		this.email = email;
-		this.telefone = telefone;
-		this.usuario = usuario;
-	}
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private Long id;
 
-	public Aluno(Integer matricula, String nome, String email, String telefone, Usuario usuario) {
-		super();
-		this.matricula = matricula;
-		this.nome = nome;
-		this.email = email;
-		this.telefone = telefone;
-		this.usuario = usuario;
-	}
-	
-	public Aluno(){}
+    @Column(name = "matricula", nullable = false, unique = true)
+    private Long matricula;
 
-	public Integer getId() {
-		return id;
-	}
+    @Column(name = "nome", length = 100, nullable = false)
+    private String nome;
 
-	public void setId(Integer id) {
-		this.id = id;
-	}
+    @Column(name = "email", length = 100, nullable = false, unique = true)
+    private String email;
 
-	public Integer getMatricula() {
-		return matricula;
-	}
+    @Column(name = "telefone", length = 20, nullable = false)
+    private String telefone;
 
-	public void setMatricula(Integer matricula) {
-		this.matricula = matricula;
-	}
+    @OneToOne
+    @JoinColumn(name = "usuario_id")
+    private Usuario usuario;
 
-	public String getNome() {
-		return nome;
-	}
+    public Aluno(Long id, Long matricula, String nome, String email, String telefone, Usuario usuario) {
+        super();
+        this.id = id;
+        this.matricula = matricula;
+        this.nome = nome;
+        this.email = email;
+        this.telefone = telefone;
+        this.usuario = usuario;
+    }
 
-	public void setNome(String nome) {
-		this.nome = nome;
-	}
+    public Aluno(Long matricula, String nome, String email, String telefone, Usuario usuario) {
+        super();
+        this.matricula = matricula;
+        this.nome = nome;
+        this.email = email;
+        this.telefone = telefone;
+        this.usuario = usuario;
+    }
 
-	public String getEmail() {
-		return email;
-	}
+    public Aluno(){}
 
-	public void setEmail(String email) {
-		this.email = email;
-	}
+    public Long getId() {
+        return id;
+    }
 
-	public String getTelefone() {
-		return telefone;
-	}
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-	public void setTelefone(String telefone) {
-		this.telefone = telefone;
-	}
+    public Long getMatricula() {
+        return matricula;
+    }
 
-	public Usuario getUsuario() {
-		return usuario;
-	}
+    public void setMatricula(Long matricula) {
+        this.matricula = matricula;
+    }
 
-	public void setUsuario(Usuario usuario) {
-		this.usuario = usuario;
-	}
+    public String getNome() {
+        return nome;
+    }
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		return result;
-	}
+    public void setNome(String nome) {
+        this.nome = nome;
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		Aluno other = (Aluno) obj;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
-			return false;
-		return true;
-	}
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getTelefone() {
+        return telefone;
+    }
+
+    public void setTelefone(String telefone) {
+        this.telefone = telefone;
+    }
+
+    public Usuario getUsuario() {
+        return usuario;
+    }
+
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((id == null) ? 0 : id.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        Aluno other = (Aluno) obj;
+        if (id == null) {
+            if (other.id != null)
+                return false;
+        } else if (!id.equals(other.id))
+            return false;
+        return true;
+    }
 	
 }

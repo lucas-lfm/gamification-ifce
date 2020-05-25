@@ -12,8 +12,9 @@ import javax.persistence.OneToOne;
 public class Professor {
 	
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
-	private Integer id;
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "id")
+	private Long id;
 	
 	@Column(name = "nome", length = 100, nullable = false)
 	private String nome;
@@ -28,7 +29,7 @@ public class Professor {
 	@JoinColumn(name = "usuario_id")
 	private Usuario usuario;
 	
-	public Professor(Integer id, String nome, String email, String telefone, Usuario usuario) {
+	public Professor(Long id, String nome, String email, String telefone, Usuario usuario) {
 		super();
 		this.id = id;
 		this.nome = nome;
@@ -47,11 +48,11 @@ public class Professor {
 
 	public Professor(){}
 
-	public Integer getId() {
+	public Long getId() {
 		return id;
 	}
 
-	public void setId(Integer id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 
