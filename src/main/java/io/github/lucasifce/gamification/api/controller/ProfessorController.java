@@ -61,7 +61,7 @@ public class ProfessorController {
     public Professor update(@RequestBody @Valid Professor professor, @PathVariable("id") Long id){
         return professorService.save(professor, id, "update");
     }
-    
+
     @DeleteMapping("/{id}")
     @ResponseStatus(NO_CONTENT)
     public void deleteProfessor(@PathVariable("id") Long id){
