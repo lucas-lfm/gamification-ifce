@@ -1,5 +1,6 @@
 package io.github.lucasifce.gamification.api.controller;
 
+import io.github.lucasifce.gamification.domain.exception.NegocioException;
 import io.github.lucasifce.gamification.domain.model.Professor;
 import io.github.lucasifce.gamification.domain.model.Usuario;
 import io.github.lucasifce.gamification.domain.repository.ProfessoresRepository;
@@ -11,14 +12,14 @@ import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+import static org.springframework.http.HttpStatus.*;
 
 import java.util.List;
 
 
 import javax.validation.Valid;
 
-import static org.springframework.http.HttpStatus.CREATED;
-import static org.springframework.http.HttpStatus.NOT_FOUND;
+
 
 @RestController
 @RequestMapping("/api/professores")
@@ -47,38 +48,20 @@ public class ProfessorController {
     @GetMapping("/{id}")
     public Professor getProfessorById(@PathVariable("id") Long id){
         return professoresRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Professor não encontrado."));
+                .orElseThrow(() -> new NegocioException("Professor não encontrado."));
     }
 
     @PostMapping
     @ResponseStatus(CREATED)
-    @Transactional
     public Professor save(@RequestBody @Valid Professor professor){
-        Usuario usuario = usuariosRepository.save(professor.getUsuario());
-        professor.setUsuario(usuario);
-        return professoresRepository.save(professor);
+        return professorService.save(professor, null, "new");
     }
 
     @PutMapping("/{id}")
     public Professor update(@RequestBody @Valid Professor professor, @PathVariable("id") Long id){
-        return professoresRepository.findById(id)
-                .map(professorExistente -> {
-                    professor.setId(professorExistente.getId());
-                    professoresRepository.save(professor);
-                    return professor;
-                }).orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Professor não encontrado."));
+        return professorService.save(professor, id, "update");
     }
-
-    @PutMapping("/usuario/{id}")
-    public void updateUsuarioProfessor(@RequestBody @Valid Usuario usuario, @PathVariable("id") Long id){/*Esse método pode ficar na usuario repositóry, depois refatorar*/
-        usuariosRepository.findById(id)
-                .map(usuarioExistente -> {
-                    usuario.setId(usuarioExistente.getId());
-                    usuariosRepository.save(usuario);
-                    return usuario;
-                }).orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Usuário não encontrado."));
-    }
-
+    
     @DeleteMapping("/{id}")
     @ResponseStatus(NO_CONTENT)
     public void deleteProfessor(@PathVariable("id") Long id){

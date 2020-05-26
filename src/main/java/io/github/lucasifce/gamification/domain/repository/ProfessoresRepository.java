@@ -6,4 +6,6 @@ import io.github.lucasifce.gamification.domain.model.Professor;
 
 public interface ProfessoresRepository extends JpaRepository<Professor, Long>{
 
+    Professor findByEmail(String email);
+
 }
