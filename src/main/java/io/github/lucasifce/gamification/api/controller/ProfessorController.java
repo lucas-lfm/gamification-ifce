@@ -4,6 +4,7 @@ import io.github.lucasifce.gamification.domain.model.Professor;
 import io.github.lucasifce.gamification.domain.model.Usuario;
 import io.github.lucasifce.gamification.domain.repository.ProfessoresRepository;
 import io.github.lucasifce.gamification.domain.repository.UsuariosRepository;
+import io.github.lucasifce.gamification.service.ProfessorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+
 
 import javax.validation.Valid;
 
@@ -27,6 +29,9 @@ public class ProfessorController {
 
     @Autowired
     private UsuariosRepository usuariosRepository;
+
+    @Autowired
+    private ProfessorService professorService;
 
     @GetMapping
     public List<Professor> find(Professor filtro){
@@ -72,6 +77,12 @@ public class ProfessorController {
                     usuariosRepository.save(usuario);
                     return usuario;
                 }).orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Usuário não encontrado."));
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(NO_CONTENT)
+    public void deleteProfessor(@PathVariable("id") Long id){
+        professorService.deleteProfessor(id);
     }
 
 }
