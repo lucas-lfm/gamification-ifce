@@ -25,12 +25,12 @@ public class Usuario {
     private Long id;
 
     @Column(name = "login", length = 60, nullable = false, unique = true)
-    @NotBlank(message = "{campo.login.obrigatorio}")
+    @NotBlank
     private String login;
 
     @JsonProperty(access = Access.WRITE_ONLY)
     @Column(name = "senha", length = 100, nullable = false)
-    @NotBlank(message = "{campo.senha.obrigatorio}")
+    @NotBlank
     private String senha;
 
     @Column(name = "admin", nullable = false)
