@@ -5,6 +5,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.validation.constraints.NotBlank;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
@@ -24,10 +25,12 @@ public class Usuario {
     private Long id;
 
     @Column(name = "login", length = 60, nullable = false, unique = true)
+    @NotBlank(message = "{campo.login.obrigatorio}")
     private String login;
 
     @JsonProperty(access = Access.WRITE_ONLY)
     @Column(name = "senha", length = 100, nullable = false)
+    @NotBlank(message = "{campo.senha.obrigatorio}")
     private String senha;
 
     @Column(name = "admin", nullable = false)

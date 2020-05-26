@@ -2,6 +2,8 @@ package io.github.lucasifce.gamification.api.controller;
 
 import java.util.List;
 
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
@@ -53,8 +55,8 @@ public class AlunoController {
 	
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	@Transactional
-	public Aluno save(@RequestBody Aluno aluno) {
+  @Transactional
+	public Aluno save(@RequestBody @Valid Aluno aluno) {
 		Usuario usuario = usuariosRepository.save(aluno.getUsuario());
 		aluno.setUsuario(usuario);
 		return alunosRepository.save(aluno);
@@ -74,7 +76,7 @@ public class AlunoController {
 	
 	@PutMapping("{id}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	public void update(@RequestBody Aluno aluno, @PathVariable("id") Long id) {
+	public void update(@RequestBody @Valid Aluno aluno, @PathVariable("id") Long id) {
 		alunosRepository.findById(id)
 		.map(alunoExistente -> {
 			aluno.setId(alunoExistente.getId());
