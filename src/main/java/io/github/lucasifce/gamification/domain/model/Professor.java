@@ -11,6 +11,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
+import javax.validation.Valid;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 
@@ -26,17 +27,18 @@ public class Professor {
 	private Long id;
 	
 	@Column(name = "nome", length = 100, nullable = false)
-	@NotBlank(message = "{campo.nome.obrigatorio}")
+	@NotBlank
 	private String nome;
 	
 	@Column(name = "email", length = 100, nullable = false, unique = true)
-	@NotBlank(message = "{campo.email.obrigatorio}")
-    @Email(message = "{campo.email.invalido}")
+	@NotBlank
+    @Email
 	private String email;
 	
 	@Column(name = "telefone", length = 20)
 	private String telefone;
 	
+	@Valid
 	@OneToOne
 	@JoinColumn(name = "usuario_id")
 	private Usuario usuario;
