@@ -1,5 +1,6 @@
 package io.github.lucasifce.gamification.service.implementation;
 
+import io.github.lucasifce.gamification.api.dto.ProfessorDTO;
 import io.github.lucasifce.gamification.domain.exception.NegocioException;
 import io.github.lucasifce.gamification.domain.model.Professor;
 import io.github.lucasifce.gamification.domain.model.Usuario;
@@ -24,60 +25,57 @@ public class ProfessorServiceImplementation implements ProfessorService {
 
     @Override
     @Transactional
-    public Professor save(Professor professor, Long id, String operacao){
-        boolean tipoOperacao = tipoOperacaoSave(operacao);
-
-        if(pesquisarCadastroEmailProfessor(professor, id, tipoOperacao)) {
-            if(pesquisarCadastroUsuario(professor.getUsuario(), id, tipoOperacao)) {
-                return salvarProfessorBD(professor);
-            }
-        }
-        return null;
-    }
-
-    private Professor salvarProfessorBD(Professor professor){
-        Usuario usuario = usuariosRepository.save(professor.getUsuario());
-        professor.setUsuario(usuario);
-        return professoresRepository.save(professor);
-    }
-
-    private boolean pesquisarCadastroUsuario(Usuario usuario, Long id, boolean tipoOperacao){
-        Usuario usuarioPesquisa = usuariosRepository.findByLogin(usuario.getLogin());
-
-        if(tipoOperacao) {
-            if (usuarioPesquisa != null) {
+    public Professor save(Professor professor){
+        if(pesquisarCadastroEmailProfessor(professor.getEmail()) == null) {
+            if(pesquisarCadastroUsuario(professor.getUsuario().getLogin()) == null) {
+                Usuario usuario = usuariosRepository.save(professor.getUsuario());
+                professor.setUsuario(usuario);
+                return professoresRepository.save(professor);
+            } else {
                 throw new NegocioException("Nome de usuário já está em uso.");
             }
         } else {
-            Optional<Professor> professor = professoresRepository.findById(id);
-            Optional<Usuario> usuarioProfessor = usuariosRepository.findById(professor.get().getUsuario().getId());
-
-            if (usuarioPesquisa != null && !usuario.getLogin().equalsIgnoreCase(usuarioProfessor.get().getLogin())) {
-                throw new NegocioException("Nome de usuário já está em uso.");
-            }
+            throw new NegocioException("Email já cadastrado.");
         }
-        return true;
     }
 
-    private boolean pesquisarCadastroEmailProfessor(Professor professor, Long id, boolean tipoOperacao){
-        Professor pesquisaProfessor = professoresRepository.findByEmail(professor.getEmail());
+    /*Verifica se já existe um login desse usuário, caso sim lança um exceção se não retorna true*/
+    private Usuario pesquisarCadastroUsuario(String login){
+        return usuariosRepository.findByLogin(login);
+    }
 
-        if(tipoOperacao) {
-            if(pesquisaProfessor != null){
+    /*Verifica se já existe um email desse professor, caso sim lança um exceção se não retorna true*/
+    private Professor pesquisarCadastroEmailProfessor(String email){
+        return professoresRepository.findByEmail(email);
+    }
+
+    @Override
+    public ProfessorDTO update(ProfessorDTO dto, Long id) {
+        Optional<Professor> professor = professoresRepository.findById(id);
+
+        if(!professor.isEmpty()) {
+            if (!professor.get().getEmail().equalsIgnoreCase(dto.getEmail())
+                    && pesquisarCadastroEmailProfessor(dto.getEmail()) != null) {
                 throw new NegocioException("Email já cadastrado.");
+            } else {
+                professor.get().setNome(dto.getNome());
+                professor.get().setEmail(dto.getEmail());
+                professor.get().setTelefone(dto.getTelefone());
+                return converterProfessor(professoresRepository.save(professor.get()));
             }
         } else {
-            Optional<Professor> professorValidacao = professoresRepository.findById(id);
-
-            if(pesquisaProfessor != null && !professor.getEmail().equalsIgnoreCase(professorValidacao.get().getEmail())){
-                throw new NegocioException("Email já cadastrado.");
-            }
+            throw new NegocioException("Professor não encontrado.");
         }
-        return true;
     }
 
-    private boolean tipoOperacaoSave(String op){
-        return op.equals("new") ? true : false;
+    private ProfessorDTO converterProfessor(Professor professor){
+        return ProfessorDTO
+                .builder()
+                .id(professor.getId())
+                .nome(professor.getNome())
+                .email(professor.getEmail())
+                .telefone(professor.getTelefone())
+                .build();
     }
 
     @Override

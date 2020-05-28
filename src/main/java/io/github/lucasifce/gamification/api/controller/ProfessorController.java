@@ -1,5 +1,6 @@
 package io.github.lucasifce.gamification.api.controller;
 
+import io.github.lucasifce.gamification.api.dto.ProfessorDTO;
 import io.github.lucasifce.gamification.domain.exception.NegocioException;
 import io.github.lucasifce.gamification.domain.model.Professor;
 import io.github.lucasifce.gamification.domain.model.Usuario;
@@ -54,12 +55,12 @@ public class ProfessorController {
     @PostMapping
     @ResponseStatus(CREATED)
     public Professor save(@RequestBody @Valid Professor professor){
-        return professorService.save(professor, null, "new");
+        return professorService.save(professor);
     }
 
     @PutMapping("/{id}")
-    public Professor update(@RequestBody @Valid Professor professor, @PathVariable("id") Long id){
-        return professorService.save(professor, id, "update");
+    public ProfessorDTO update(@RequestBody @Valid ProfessorDTO professor, @PathVariable("id") Long id){
+        return professorService.update(professor, id);
     }
 
     @DeleteMapping("/{id}")
