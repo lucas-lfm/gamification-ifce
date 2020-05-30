@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import io.github.lucasifce.gamification.domain.exception.NegocioException;
 import io.github.lucasifce.gamification.domain.model.Aluno;
 import io.github.lucasifce.gamification.domain.model.Usuario;
 import io.github.lucasifce.gamification.domain.repository.AlunosRepository;
@@ -55,9 +56,31 @@ public class AlunoController {
 	
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-  @Transactional
+    @Transactional
 	public Aluno save(@RequestBody @Valid Aluno aluno) {
-		Usuario usuario = usuariosRepository.save(aluno.getUsuario());
+		
+		//Inserir essa regra de negócio em uma classe de serviço (TESTADO)
+		//-------------------------------------------------------------------
+		Aluno alunoExistente = alunosRepository.findByMatricula(aluno.getMatricula());
+		
+		if(alunoExistente != null && !alunoExistente.equals(aluno)) {
+			throw new NegocioException("Aluno já cadastrado!");
+		}
+		
+		alunoExistente = alunosRepository.findByEmail(aluno.getEmail());
+		
+		if(alunoExistente != null && !alunoExistente.equals(aluno)) {
+			throw new NegocioException("Email já cadastrado!");
+		}
+		
+		Usuario usuario = usuariosRepository.findByLogin(aluno.getUsuario().getLogin());
+		
+		if(usuario != null && !usuario.equals(aluno.getUsuario())) {
+			throw new NegocioException("Esse nome de usuário não está disponível!");
+		}
+		//-----------------------------------------------------------------------
+		
+		usuario = usuariosRepository.save(aluno.getUsuario());
 		aluno.setUsuario(usuario);
 		return alunosRepository.save(aluno);
 		//return aluno.getUsuario().toString();

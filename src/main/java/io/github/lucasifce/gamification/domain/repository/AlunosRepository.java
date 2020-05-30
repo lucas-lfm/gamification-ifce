@@ -7,6 +7,7 @@ import io.github.lucasifce.gamification.domain.model.Aluno;
 
 public interface AlunosRepository extends JpaRepository<Aluno, Long>{
 	
-	public Optional<Aluno> findByMatricula(Long matricula);
+	Aluno findByMatricula(Long matricula);
+	Aluno findByEmail(String email);
 	
 }
