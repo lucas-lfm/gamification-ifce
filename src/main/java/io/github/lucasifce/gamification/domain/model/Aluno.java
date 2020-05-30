@@ -4,17 +4,26 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.validation.Valid;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
 @Data
@@ -47,5 +56,17 @@ public class Aluno {
     @OneToOne
     @JoinColumn(name = "usuario_id")
     private Usuario usuario;
+   
+   /*@ManyToMany(targetEntity = MatriculaTurma.class, fetch = FetchType.EAGER)
+	@JoinTable(name = "matricula_turma",
+			joinColumns = @JoinColumn(name = "aluno_id"),
+			inverseJoinColumns = @JoinColumn(name = "turma_id"))*/
+    @JsonIgnoreProperties("alunos")
+    @ManyToMany(mappedBy = "alunos")
+    private List<Turma> turmas;
+    
+    @JsonIgnoreProperties(value = {"aluno", "turma"})
+	@OneToMany(mappedBy = "aluno")
+	private List<MatriculaTurma> matriculas;
 
 }
