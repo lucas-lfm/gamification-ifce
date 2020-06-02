@@ -1,6 +1,7 @@
 package io.github.lucasifce.gamification.domain.service.implementation;
 
 import io.github.lucasifce.gamification.api.dto.ProfessorDTO;
+import io.github.lucasifce.gamification.domain.exception.EntidadeNaoEncontradaException;
 import io.github.lucasifce.gamification.domain.exception.NegocioException;
 import io.github.lucasifce.gamification.domain.model.Professor;
 import io.github.lucasifce.gamification.domain.model.Usuario;
@@ -48,13 +49,13 @@ public class ProfessorServiceImplementation implements ProfessorService {
     @Override
     public Professor getProfessorById(Long id){
         return professoresRepository.findById(id)
-                .orElseThrow(() -> new NegocioException("Professor não encontrado."));
+                .orElseThrow(() -> new EntidadeNaoEncontradaException("Professor não encontrado."));
     }
 
     @Override
     public ProfessorDTO getProfessorByIdDTO(Long id){
         return converterProfessor(professoresRepository.findById(id)
-                .orElseThrow(() -> new NegocioException("Professor não encontrado.")));
+                .orElseThrow(() -> new EntidadeNaoEncontradaException("Professor não encontrado.")));
     }
 
     @Override
@@ -88,7 +89,7 @@ public class ProfessorServiceImplementation implements ProfessorService {
                 return converterProfessor(professoresRepository.save(professor.get()));
             }
         } else {
-            throw new NegocioException("Professor não encontrado.");
+            throw new EntidadeNaoEncontradaException("Professor não encontrado.");
         }
     }
 
@@ -100,17 +101,19 @@ public class ProfessorServiceImplementation implements ProfessorService {
                     professoresRepository.delete(professorExistente);
                     usuariosRepository.deleteById(professorExistente.getUsuario().getId());
                     return professorExistente;
-                }).orElseThrow(() -> new NegocioException("Professor não encontrado."));
+                }).orElseThrow(() -> new EntidadeNaoEncontradaException("Professor não encontrado."));
     }
 
     /*Verifica se já existe um login desse usuário*/
     private Usuario pesquisarCadastroUsuario(String login){
-        return usuariosRepository.findByLogin(login);
+        Optional<Usuario> usuario = usuariosRepository.findByLogin(login);
+        return usuario.isPresent() ? usuario.get() : null;
     }
 
     /*Verifica se já existe um email desse professor*/
     private Professor pesquisarCadastroEmailProfessor(String email){
-        return professoresRepository.findByEmail(email);
+        Optional<Professor> professor = professoresRepository.findByEmail(email);
+        return professor.isPresent() ? professor.get() : null;
     }
 
     /*Server para converter Professor para DTO*/

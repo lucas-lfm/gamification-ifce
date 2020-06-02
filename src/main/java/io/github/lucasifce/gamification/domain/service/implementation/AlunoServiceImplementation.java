@@ -1,7 +1,11 @@
 package io.github.lucasifce.gamification.domain.service.implementation;
 
 import io.github.lucasifce.gamification.api.dto.AlunoDTO;
+import io.github.lucasifce.gamification.api.dto.AlunoUsuarioDTO;
+import io.github.lucasifce.gamification.domain.exception.EntidadeNaoEncontradaException;
+import io.github.lucasifce.gamification.domain.exception.NegocioException;
 import io.github.lucasifce.gamification.domain.model.Aluno;
+import io.github.lucasifce.gamification.domain.model.Usuario;
 import io.github.lucasifce.gamification.domain.repository.AlunosRepository;
 import io.github.lucasifce.gamification.domain.repository.UsuariosRepository;
 import io.github.lucasifce.gamification.domain.service.AlunoService;
@@ -11,6 +15,7 @@ import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -39,6 +44,56 @@ public class AlunoServiceImplementation implements AlunoService {
         return alunosRepository.findAll(example);
     }
 
+    @Override
+    public AlunoDTO getAlunoByMatriculaDTO(Long matricula) {
+        return converterAluno(alunosRepository.findByMatricula(matricula)
+               .orElseThrow(() -> new EntidadeNaoEncontradaException("Aluno não encontrado.")));/*ver com o lucas se não é melhor colocar o no content*/
+
+    }
+
+    @Override
+    public Aluno getAlunoByMatricula(Long matricula) {
+        return alunosRepository.findByMatricula(matricula)
+               .orElseThrow(() -> new EntidadeNaoEncontradaException("Aluno não encontrado."));
+    }
+
+    @Override
+    public AlunoUsuarioDTO save(Aluno aluno){
+        if(pesquisarCadastroEmailAluno(aluno.getEmail()) == null){
+            if(pesquisarCadastroUsuario(aluno.getUsuario().getLogin()) == null){
+                if(pesquisarCadastroMatriculaAluno(aluno.getMatricula()) == null){
+                    Usuario usuario = usuariosRepository.save(aluno.getUsuario());
+                    aluno.setUsuario(usuario);
+                    return converterAlunoUsuraio(alunosRepository.save(aluno));
+                } else {
+                    throw new NegocioException("Matrícula já cadastrada.");
+                }
+            } else {
+                throw new NegocioException("Nome de usuário já está em uso.");
+            }
+        } else {
+            throw new NegocioException("Email já cadastrado.");
+        }
+    }
+
+    /*Verifica se já existe um login desse usuário*/
+    private Usuario pesquisarCadastroUsuario(String login){
+        Optional<Usuario> usuario = usuariosRepository.findByLogin(login);
+        return usuario.isPresent() ? usuario.get() : null;
+    }
+
+    /*Verifica se já existe uma matricula desse aluno*/
+    private Aluno pesquisarCadastroMatriculaAluno(Long matricula){
+        Optional<Aluno> aluno = alunosRepository.findByMatricula(matricula);
+        return aluno.isPresent() ? aluno.get() : null;
+    }
+
+    /*Verifica se já existe um email desse aluno*/
+    private Aluno pesquisarCadastroEmailAluno(String email){
+        Optional<Aluno> aluno = alunosRepository.findByEmail(email);
+        return aluno.isPresent() ? aluno.get() : null; //se existir email já cadastrado retorna a instancia caso não null. Fazer isso para professor
+    }
+
     /*Metodo para converter Aluno para AlunoDTO*/
     private AlunoDTO converterAluno(Aluno aluno){
         return AlunoDTO
@@ -48,6 +103,19 @@ public class AlunoServiceImplementation implements AlunoService {
                 .nome(aluno.getNome())
                 .email(aluno.getEmail())
                 .telefone(aluno.getTelefone())
+                .build();
+    }
+
+    /*Metodo para converter Aluno para AlunoUsuarioDTO*/
+    private AlunoUsuarioDTO converterAlunoUsuraio(Aluno aluno){
+        return AlunoUsuarioDTO
+                .builder()
+                .id(aluno.getId())
+                .matricula(aluno.getMatricula())
+                .nome(aluno.getNome())
+                .email(aluno.getEmail())
+                .telefone(aluno.getTelefone())
+                .usuario(aluno.getUsuario())
                 .build();
     }
 

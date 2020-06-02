@@ -8,6 +8,7 @@ import io.github.lucasifce.gamification.domain.model.Usuario;
 
 public interface UsuariosRepository extends JpaRepository<Usuario, Long>{ 
 
-	Usuario findByLogin(String login);
+	Optional<Usuario> findByLogin(String login);
+
 	
 }
