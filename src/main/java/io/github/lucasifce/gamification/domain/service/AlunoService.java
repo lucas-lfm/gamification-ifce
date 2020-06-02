@@ -15,7 +15,7 @@ public interface AlunoService {
     Aluno getAlunoByMatricula(Long matricula);
 
     AlunoUsuarioDTO save(Aluno aluno);
-    /*ProfessorDTO update(ProfessorDTO dto, Long id);
-    void deleteProfessor(Long id);*/
+    AlunoDTO update(AlunoDTO dto, Long id);
+    /*void deleteProfessor(Long id);*/
 
 }

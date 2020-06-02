@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -58,13 +59,14 @@ public class AlunoServiceImplementation implements AlunoService {
     }
 
     @Override
+    @Transactional
     public AlunoUsuarioDTO save(Aluno aluno){
         if(pesquisarCadastroEmailAluno(aluno.getEmail()) == null){
             if(pesquisarCadastroUsuario(aluno.getUsuario().getLogin()) == null){
                 if(pesquisarCadastroMatriculaAluno(aluno.getMatricula()) == null){
                     Usuario usuario = usuariosRepository.save(aluno.getUsuario());
                     aluno.setUsuario(usuario);
-                    return converterAlunoUsuraio(alunosRepository.save(aluno));
+                    return converterAlunoUsuario(alunosRepository.save(aluno));
                 } else {
                     throw new NegocioException("Matrícula já cadastrada.");
                 }
@@ -73,6 +75,31 @@ public class AlunoServiceImplementation implements AlunoService {
             }
         } else {
             throw new NegocioException("Email já cadastrado.");
+        }
+    }
+
+    @Override
+    public AlunoDTO update(AlunoDTO dto, Long id){
+        Optional<Aluno> aluno = alunosRepository.findById(id);
+
+        if(!aluno.isEmpty()){ //se existir algum aluno com esse id
+            if(!aluno.get().getEmail().equalsIgnoreCase(dto.getEmail())
+                && pesquisarCadastroEmailAluno(dto.getEmail()) != null){
+                throw new NegocioException("Email já cadastrado.");
+            } else {
+                if(!aluno.get().getMatricula().equals(dto.getMatricula())
+                        && pesquisarCadastroMatriculaAluno(dto.getMatricula()) != null){
+                    throw new NegocioException("Matrícula já pertence a outro aluno.");
+                } else {
+                    aluno.get().setMatricula(dto.getMatricula());
+                    aluno.get().setNome(dto.getNome());
+                    aluno.get().setEmail(dto.getEmail());
+                    aluno.get().setTelefone(dto.getTelefone());
+                    return converterAluno(alunosRepository.save(aluno.get()));
+                }
+            }
+        } else {
+            throw new EntidadeNaoEncontradaException("Aluno não encontrado.");
         }
     }
 
@@ -107,7 +134,7 @@ public class AlunoServiceImplementation implements AlunoService {
     }
 
     /*Metodo para converter Aluno para AlunoUsuarioDTO*/
-    private AlunoUsuarioDTO converterAlunoUsuraio(Aluno aluno){
+    private AlunoUsuarioDTO converterAlunoUsuario(Aluno aluno){
         return AlunoUsuarioDTO
                 .builder()
                 .id(aluno.getId())
