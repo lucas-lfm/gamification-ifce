@@ -53,23 +53,18 @@ public class AlunoController {
 		return alunoService.save(aluno);
 	}
 
-	@DeleteMapping("{id}")
-	@ResponseStatus(HttpStatus.NO_CONTENT)
-	public void delete(@PathVariable Long id) {
-		alunosRepository.findById(id)
-		.map(alunoExistente -> {
-			alunosRepository.delete(alunoExistente);
-			return alunoExistente;
-		}).orElseThrow( () -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-				"Cliente não encontrado!") );
-	}
-	
 	@PutMapping("/{id}")
 	//@ResponseStatus(HttpStatus.NO_CONTENT)
 	public AlunoDTO update(@RequestBody @Valid AlunoDTO aluno, @PathVariable("id") Long id) {
 		return alunoService.update(aluno, id);
 	}
-	
+
+	@DeleteMapping("/{id}")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public void delete(@PathVariable("id") Long id) {
+		alunoService.deleteAluno(id);
+	}
+
 	/*@GetMapping("/buscar-matricula/{matricula}")
 	public ResponseEntity<Aluno> buscarPorMatricula(@PathVariable("matricula") Long matricula){
 		

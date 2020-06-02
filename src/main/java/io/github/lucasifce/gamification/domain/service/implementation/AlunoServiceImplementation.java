@@ -103,6 +103,17 @@ public class AlunoServiceImplementation implements AlunoService {
         }
     }
 
+    @Override
+    @Transactional
+    public void deleteAluno(Long id){
+        alunosRepository.findById(id)
+                .map(alunoExistente -> {
+                    alunosRepository.delete(alunoExistente);
+                    usuariosRepository.deleteById(alunoExistente.getUsuario().getId());
+                    return alunoExistente;
+                }).orElseThrow(() -> new EntidadeNaoEncontradaException("Aluno não encontrado."));
+    }
+
     /*Verifica se já existe um login desse usuário*/
     private Usuario pesquisarCadastroUsuario(String login){
         Optional<Usuario> usuario = usuariosRepository.findByLogin(login);

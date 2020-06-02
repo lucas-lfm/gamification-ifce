@@ -16,6 +16,6 @@ public interface AlunoService {
 
     AlunoUsuarioDTO save(Aluno aluno);
     AlunoDTO update(AlunoDTO dto, Long id);
-    /*void deleteProfessor(Long id);*/
+    void deleteAluno(Long id);//se se essa implementação é válida, pq pode deixar apenas ele inativo
 
 }
