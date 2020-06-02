@@ -3,13 +3,10 @@ package io.github.lucasifce.gamification.api.controller;
 import io.github.lucasifce.gamification.api.dto.AlunoDTO;
 import io.github.lucasifce.gamification.api.dto.AlunoUsuarioDTO;
 import io.github.lucasifce.gamification.domain.model.Aluno;
-import io.github.lucasifce.gamification.domain.repository.AlunosRepository;
-import io.github.lucasifce.gamification.domain.repository.UsuariosRepository;
 import io.github.lucasifce.gamification.domain.service.AlunoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -17,12 +14,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/alunos")
 public class AlunoController {
-
-	@Autowired
-	private AlunosRepository alunosRepository;
-	
-	@Autowired
-	private UsuariosRepository usuariosRepository;
 
 	@Autowired
 	private AlunoService alunoService;
@@ -54,7 +45,6 @@ public class AlunoController {
 	}
 
 	@PutMapping("/{id}")
-	//@ResponseStatus(HttpStatus.NO_CONTENT)
 	public AlunoDTO update(@RequestBody @Valid AlunoDTO aluno, @PathVariable("id") Long id) {
 		return alunoService.update(aluno, id);
 	}

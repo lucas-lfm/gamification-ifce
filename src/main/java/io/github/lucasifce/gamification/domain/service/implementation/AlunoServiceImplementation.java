@@ -15,6 +15,7 @@ import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -61,6 +62,7 @@ public class AlunoServiceImplementation implements AlunoService {
     @Override
     @Transactional
     public AlunoUsuarioDTO save(Aluno aluno){
+        List<Exception> erros = new ArrayList<Exception>();
         if(pesquisarCadastroEmailAluno(aluno.getEmail()) == null){
             if(pesquisarCadastroUsuario(aluno.getUsuario().getLogin()) == null){
                 if(pesquisarCadastroMatriculaAluno(aluno.getMatricula()) == null){
@@ -68,14 +70,18 @@ public class AlunoServiceImplementation implements AlunoService {
                     aluno.setUsuario(usuario);
                     return converterAlunoUsuario(alunosRepository.save(aluno));
                 } else {
-                    throw new NegocioException("Matrícula já cadastrada.");
+                    erros.add(new NegocioException("Matrícula já cadastrada."));
                 }
             } else {
-                throw new NegocioException("Nome de usuário já está em uso.");
+                erros.add(new NegocioException("Nome de usuário já está em uso."));
             }
         } else {
-            throw new NegocioException("Email já cadastrado.");
+            erros.add(new NegocioException("Email já cadastrado."));
         }
+        if(!erros.isEmpty()){
+            erros.forEach(err -> { throw new NegocioException(err.getMessage()); });
+        }
+        return null;
     }
 
     @Override
