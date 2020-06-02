@@ -4,6 +4,8 @@ import java.util.List;
 
 import javax.validation.Valid;
 
+import io.github.lucasifce.gamification.api.dto.AlunoDTO;
+import io.github.lucasifce.gamification.domain.service.AlunoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
@@ -35,16 +37,19 @@ public class AlunoController {
 	
 	@Autowired
 	private UsuariosRepository usuariosRepository;
+
+	@Autowired
+	private AlunoService alunoService;
 	
 	@GetMapping
-    //@ResponseStatus(HttpStatus.OK) - ja retorna por padrao o status OK se der certo
-    public List<Aluno> find(Aluno filtro){
-        ExampleMatcher matcher = ExampleMatcher.matching().
-                withIgnoreCase().withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING);
-        Example example = Example.of(filtro, matcher);
-        List<Aluno> alunos = alunosRepository.findAll(example);
-        return alunos;
+    public List<Aluno> findAluno(Aluno filtro){
+        return alunoService.findAluno(filtro);
     }
+
+	@GetMapping("/dto")
+	public List<AlunoDTO> findAlunoDTO(Aluno filtro){
+		return alunoService.findAlunoDTO(filtro);
+	}
 	
 	@GetMapping("/{id}")
 	public Aluno getAlunoById(@PathVariable("id") Long id){
