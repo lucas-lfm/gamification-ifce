@@ -1,4 +1,4 @@
-package io.github.lucasifce.gamification.service.implementation;
+package io.github.lucasifce.gamification.domain.service.implementation;
 
 import io.github.lucasifce.gamification.api.dto.ProfessorDTO;
 import io.github.lucasifce.gamification.domain.exception.NegocioException;
@@ -6,16 +6,13 @@ import io.github.lucasifce.gamification.domain.model.Professor;
 import io.github.lucasifce.gamification.domain.model.Usuario;
 import io.github.lucasifce.gamification.domain.repository.ProfessoresRepository;
 import io.github.lucasifce.gamification.domain.repository.UsuariosRepository;
-import io.github.lucasifce.gamification.service.ProfessorService;
-import org.hibernate.mapping.Any;
+import io.github.lucasifce.gamification.domain.service.ProfessorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.swing.text.html.Option;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
