@@ -1,5 +1,6 @@
 package io.github.lucasifce.gamification.domain.service.implementation;
 
+import io.github.lucasifce.gamification.api.dto.AlteraTipoAdminUsuario;
 import io.github.lucasifce.gamification.domain.exception.NegocioException;
 import io.github.lucasifce.gamification.domain.model.Aluno;
 import io.github.lucasifce.gamification.domain.model.Professor;
@@ -52,6 +53,17 @@ public class UsuarioServiceImplementation implements UsuarioService {
         return usuario;
     }
 
+    @Override
+    public void updateAdminUsuario(AlteraTipoAdminUsuario admin, Long id){
+        Usuario usuario = pesquisarCadastroUsuarioId(id);
+        if(usuario != null){
+            usuario.setAdmin(admin.getAdmin());
+            usuariosRepository.save(usuario);
+        } else {
+            throw new NegocioException("Usuário não encontrado");
+        }
+    }
+
     /*Metodo para validar campo de login de usuário*/
     private boolean verificarCampos(Usuario usuario, Long id){
         if (pesquisarCadastroUsuario(usuario.getLogin()) != null
@@ -102,6 +114,7 @@ public class UsuarioServiceImplementation implements UsuarioService {
         ExampleMatcher exampleMatcher = ExampleMatcher
                 .matching()
                 .withIgnoreCase()
+                .withIgnorePaths("admin")
                 .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING);
         return Example.of(filtro, exampleMatcher);
     }
