@@ -1,5 +1,7 @@
 package io.github.lucasifce.gamification.api.controller;
 
+import io.github.lucasifce.gamification.domain.model.Aluno;
+import io.github.lucasifce.gamification.domain.model.Professor;
 import io.github.lucasifce.gamification.domain.model.Usuario;
 import io.github.lucasifce.gamification.domain.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,14 +22,14 @@ public class UsuarioController {
         return usuarioService.findUsuario(filtro);
     }
 
-    @PutMapping("/professor/usuario/{id}") /*refatorara para pegar o id do prefessor ou do aluno!!!*/
-    public Usuario updateProfessor(@RequestBody @Valid Usuario usuario, @PathVariable("id") Long id){
-        return usuarioService.update(usuario, id);
+    @PutMapping("/professor/usuario/{id_professor}") /*refatorara para pegar o id do prefessor ou do aluno!!!*/
+    public Usuario updateProfessor(@RequestBody @Valid Usuario usuario, @PathVariable("id_professor") Long id){
+        return usuarioService.update(usuario, id, Professor.class);
     }
 
-    @PutMapping("/aluno/usuario/{id}")
-    public Usuario updateAluno(@RequestBody @Valid Usuario usuario, @PathVariable("id") Long id){
-        return usuarioService.update(usuario, id);
+    @PutMapping("/aluno/usuario/{id_aluno}")
+    public Usuario updateAluno(@RequestBody @Valid Usuario usuario, @PathVariable("id_aluno") Long id){
+        return usuarioService.update(usuario, id, Aluno.class);
     }
 
 

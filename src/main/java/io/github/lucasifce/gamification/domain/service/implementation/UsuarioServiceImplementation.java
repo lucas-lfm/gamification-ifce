@@ -1,7 +1,11 @@
 package io.github.lucasifce.gamification.domain.service.implementation;
 
-import io.github.lucasifce.gamification.domain.exception.NegocioListException;
+import io.github.lucasifce.gamification.domain.exception.NegocioException;
+import io.github.lucasifce.gamification.domain.model.Aluno;
+import io.github.lucasifce.gamification.domain.model.Professor;
 import io.github.lucasifce.gamification.domain.model.Usuario;
+import io.github.lucasifce.gamification.domain.repository.AlunosRepository;
+import io.github.lucasifce.gamification.domain.repository.ProfessoresRepository;
 import io.github.lucasifce.gamification.domain.repository.UsuariosRepository;
 import io.github.lucasifce.gamification.domain.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,7 +13,6 @@ import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,6 +22,12 @@ public class UsuarioServiceImplementation implements UsuarioService {
     @Autowired
     private UsuariosRepository usuariosRepository;
 
+    @Autowired
+    private ProfessoresRepository professoresRepository;
+
+    @Autowired
+    private AlunosRepository alunosRepository;
+
     //ver possivel alteração de métodos, para deixar apenas os dtos em cada classe e deixar com todos os dados completos aqui
     @Override
     public List<Usuario> findUsuario(Usuario filtro){
@@ -27,31 +36,53 @@ public class UsuarioServiceImplementation implements UsuarioService {
     }
 
     @Override
-    public Usuario update(Usuario usuario, Long id){
-        List<String> erros = verificarCampos(usuario, id);
+    public Usuario update(Usuario usuario, Long id, Object tipoUsuario){
+        Long idUsuario;
+        var idTipoUsuario = buscaIdUsuarioComProfessorOuAluno(tipoUsuario, id);
 
-        if(erros.isEmpty()){
-            usuario.setId(id);
-            return usuariosRepository.save(usuario);
+        if(verificarIntanciaObjeto(tipoUsuario).equalsIgnoreCase("aluno")){
+            idUsuario = ((Aluno) idTipoUsuario).getUsuario().getId();
         } else {
-            throw new NegocioListException(erros, "Validação campos.");
+            idUsuario = ((Professor)idTipoUsuario).getUsuario().getId();
         }
+        if(verificarCampos(usuario, idUsuario)){
+            usuario.setId(idUsuario);
+            usuario = usuariosRepository.save(usuario);
+        }
+        return usuario;
     }
 
     /*Metodo para validar campo de login de usuário*/
-    private List<String> verificarCampos(Usuario usuario, Long id){
-        List<String> erros = new ArrayList<String>();
-        Optional<Usuario> existeUsuario = usuariosRepository.findById(id);
-
-        if(existeUsuario.isEmpty()){
-            erros.add("Usuário não encontrado.");
+    private boolean verificarCampos(Usuario usuario, Long id){
+        if (pesquisarCadastroUsuario(usuario.getLogin()) != null
+                && !pesquisarCadastroUsuarioId(id).getLogin().equalsIgnoreCase(usuario.getLogin())) {
+            throw new NegocioException("Login já pertece a outro usuário.");
         } else {
-            if (pesquisarCadastroUsuario(usuario.getLogin()) != null
-                    && !pesquisarCadastroUsuarioId(id).getLogin().equalsIgnoreCase(usuario.getLogin())) {
-                erros.add("Login já pertece a outro usuário.");
+            return true;
+        }
+    }
+
+    /*metodo para verificar instância do tipo do usuário e retornar o id do usuário de acordo com o id do aluno ou professor*/
+    private Object buscaIdUsuarioComProfessorOuAluno(Object tipoUsuario, Long id){
+        if (verificarIntanciaObjeto(tipoUsuario).equalsIgnoreCase("aluno")){
+            Optional<Aluno> aluno = alunosRepository.findById(id);
+            if(aluno.isEmpty()){
+                throw new NegocioException("Usuário não encontrado");
+            } else {
+                return aluno.get();
+            }
+        } else {
+            Optional<Professor> professor = professoresRepository.findById(id);
+            if(professor.isEmpty()){
+                throw new NegocioException("Usuário não encontrado");
+            } else {
+                return professor.get();
             }
         }
-        return erros;
+    }
+
+    private String verificarIntanciaObjeto(Object tipoUsuario){
+        return tipoUsuario.equals(Aluno.class) ? "aluno" : "professor";
     }
 
     /*verificar se já existe login */
