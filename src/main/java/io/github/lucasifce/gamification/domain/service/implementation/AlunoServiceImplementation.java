@@ -4,6 +4,7 @@ import io.github.lucasifce.gamification.api.dto.AlunoDTO;
 import io.github.lucasifce.gamification.api.dto.AlunoUsuarioDTO;
 import io.github.lucasifce.gamification.domain.exception.EntidadeNaoEncontradaException;
 import io.github.lucasifce.gamification.domain.exception.NegocioException;
+import io.github.lucasifce.gamification.domain.exception.NegocioListException;
 import io.github.lucasifce.gamification.domain.model.Aluno;
 import io.github.lucasifce.gamification.domain.model.Usuario;
 import io.github.lucasifce.gamification.domain.repository.AlunosRepository;
@@ -62,7 +63,7 @@ public class AlunoServiceImplementation implements AlunoService {
     @Override
     @Transactional
     public AlunoUsuarioDTO save(Aluno aluno){
-        List<Exception> erros = new ArrayList<Exception>();
+        List<String> erros = new ArrayList<String>();
         if(pesquisarCadastroEmailAluno(aluno.getEmail()) == null){
             if(pesquisarCadastroUsuario(aluno.getUsuario().getLogin()) == null){
                 if(pesquisarCadastroMatriculaAluno(aluno.getMatricula()) == null){
@@ -70,16 +71,19 @@ public class AlunoServiceImplementation implements AlunoService {
                     aluno.setUsuario(usuario);
                     return converterAlunoUsuario(alunosRepository.save(aluno));
                 } else {
-                    erros.add(new NegocioException("Matrícula já cadastrada."));
+                    erros.add("Matrícula já cadastrada.");
+                    //throw new NegocioException("Matrícula já cadastrada.");
                 }
             } else {
-                erros.add(new NegocioException("Nome de usuário já está em uso."));
+                erros.add("Nome de usuário já está em uso.");
+                //throw new NegocioException("Nome de usuário já está em uso.");
             }
         } else {
-            erros.add(new NegocioException("Email já cadastrado."));
+            erros.add("Email já cadastrado.");
+            //throw new NegocioException("Email já cadastrado.");
         }
         if(!erros.isEmpty()){
-            erros.forEach(err -> { throw new NegocioException(err.getMessage()); });
+            throw new NegocioListException(erros, "Erros");
         }
         return null;
     }
