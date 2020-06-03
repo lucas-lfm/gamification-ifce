@@ -3,7 +3,6 @@ package io.github.lucasifce.gamification.domain.service.implementation;
 import io.github.lucasifce.gamification.api.dto.AlunoDTO;
 import io.github.lucasifce.gamification.api.dto.AlunoUsuarioDTO;
 import io.github.lucasifce.gamification.domain.exception.EntidadeNaoEncontradaException;
-import io.github.lucasifce.gamification.domain.exception.NegocioException;
 import io.github.lucasifce.gamification.domain.exception.NegocioListException;
 import io.github.lucasifce.gamification.domain.model.Aluno;
 import io.github.lucasifce.gamification.domain.model.Usuario;
@@ -29,7 +28,6 @@ public class AlunoServiceImplementation implements AlunoService {
 
     @Autowired
     private UsuariosRepository usuariosRepository;
-
 
     @Override
     public List<AlunoDTO> findAlunoDTO(Aluno filtro) {
@@ -63,53 +61,30 @@ public class AlunoServiceImplementation implements AlunoService {
     @Override
     @Transactional
     public AlunoUsuarioDTO save(Aluno aluno){
-        List<String> erros = new ArrayList<String>();
-        if(pesquisarCadastroEmailAluno(aluno.getEmail()) == null){
-            if(pesquisarCadastroUsuario(aluno.getUsuario().getLogin()) == null){
-                if(pesquisarCadastroMatriculaAluno(aluno.getMatricula()) == null){
-                    Usuario usuario = usuariosRepository.save(aluno.getUsuario());
-                    aluno.setUsuario(usuario);
-                    return converterAlunoUsuario(alunosRepository.save(aluno));
-                } else {
-                    erros.add("Matrícula já cadastrada.");
-                    //throw new NegocioException("Matrícula já cadastrada.");
-                }
-            } else {
-                erros.add("Nome de usuário já está em uso.");
-                //throw new NegocioException("Nome de usuário já está em uso.");
-            }
+        List<String> erros = validarCampos(aluno);
+
+        if(erros.isEmpty()){
+            Usuario usuario = usuariosRepository.save(aluno.getUsuario());
+            aluno.setUsuario(usuario);
+            return converterAlunoUsuario(alunosRepository.save(aluno));
         } else {
-            erros.add("Email já cadastrado.");
-            //throw new NegocioException("Email já cadastrado.");
+            throw new NegocioListException(erros, "Validação de campos.");
         }
-        if(!erros.isEmpty()){
-            throw new NegocioListException(erros, "Erros");
-        }
-        return null;
     }
 
     @Override
     public AlunoDTO update(AlunoDTO dto, Long id){
         Optional<Aluno> aluno = alunosRepository.findById(id);
+        List<String> erros = validarCampos(aluno, dto);
 
-        if(!aluno.isEmpty()){ //se existir algum aluno com esse id
-            if(!aluno.get().getEmail().equalsIgnoreCase(dto.getEmail())
-                && pesquisarCadastroEmailAluno(dto.getEmail()) != null){
-                throw new NegocioException("Email já cadastrado.");
-            } else {
-                if(!aluno.get().getMatricula().equals(dto.getMatricula())
-                        && pesquisarCadastroMatriculaAluno(dto.getMatricula()) != null){
-                    throw new NegocioException("Matrícula já pertence a outro aluno.");
-                } else {
-                    aluno.get().setMatricula(dto.getMatricula());
-                    aluno.get().setNome(dto.getNome());
-                    aluno.get().setEmail(dto.getEmail());
-                    aluno.get().setTelefone(dto.getTelefone());
-                    return converterAluno(alunosRepository.save(aluno.get()));
-                }
-            }
+        if(erros.isEmpty()){
+            aluno.get().setMatricula(dto.getMatricula());
+            aluno.get().setNome(dto.getNome());
+            aluno.get().setEmail(dto.getEmail());
+            aluno.get().setTelefone(dto.getTelefone());
+            return converterAluno(alunosRepository.save(aluno.get()));
         } else {
-            throw new EntidadeNaoEncontradaException("Aluno não encontrado.");
+            throw new NegocioListException(erros, "Validação de campos.");
         }
     }
 
@@ -122,6 +97,41 @@ public class AlunoServiceImplementation implements AlunoService {
                     usuariosRepository.deleteById(alunoExistente.getUsuario().getId());
                     return alunoExistente;
                 }).orElseThrow(() -> new EntidadeNaoEncontradaException("Aluno não encontrado."));
+    }
+
+    /*metodo para validar campos para salvar*/
+    private List<String> validarCampos(Aluno aluno){
+        List<String> erros = new ArrayList<String>();
+
+        if(pesquisarCadastroEmailAluno(aluno.getEmail()) != null){
+            erros.add("Email já cadastrado.");
+        }
+        if(pesquisarCadastroUsuario(aluno.getUsuario().getLogin()) != null){
+            erros.add("Nome de usuário já está em uso.");
+        }
+        if(pesquisarCadastroMatriculaAluno(aluno.getMatricula()) != null){
+            erros.add("Matrícula já cadastrada.");
+        }
+        return erros;
+    }
+
+    /*metodo para validar campos para atualizar*/
+    private List<String> validarCampos(Optional<Aluno> aluno, AlunoDTO dto){
+        List<String> erros = new ArrayList<String>();
+
+        if(aluno.isEmpty()){
+            erros.add("Aluno não encontrado.");
+        } else {
+            if(!aluno.get().getEmail().equalsIgnoreCase(dto.getEmail())
+                    && pesquisarCadastroEmailAluno(dto.getEmail()) != null){
+                erros.add("Email já cadastrado.");
+            }
+            if(!aluno.get().getMatricula().equals(dto.getMatricula())
+                    && pesquisarCadastroMatriculaAluno(dto.getMatricula()) != null){
+                erros.add("Matrícula já pertence a outro aluno.");
+            }
+        }
+        return erros;
     }
 
     /*Verifica se já existe um login desse usuário*/
