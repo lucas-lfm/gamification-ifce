@@ -1,4 +1,4 @@
-package io.github.lucasifce.gamification.api.modelDTO;
+package io.github.lucasifce.gamification.api.dto;
 
 import javax.validation.constraints.NotNull;
 
