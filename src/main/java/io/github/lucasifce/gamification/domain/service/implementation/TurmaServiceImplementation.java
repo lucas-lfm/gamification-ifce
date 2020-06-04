@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -43,7 +44,7 @@ public class TurmaServiceImplementation implements TurmaService {
             erros.add("Código de turma já cadastrado.");
         }
         if(professorCadastro.isEmpty()){
-            erros.add("Professor não com esse id está cadastrado.");
+            erros.add("Professor não existe.");
         }
         return erros;
     }
@@ -65,6 +66,7 @@ public class TurmaServiceImplementation implements TurmaService {
                 .codigo(dto.getCodigo())
                 .periodo(dto.getPeriodo())
                 .criadorTurma(professor.get())
+                .professores(Arrays.asList(professor.get()))
                 .build();
     }
 

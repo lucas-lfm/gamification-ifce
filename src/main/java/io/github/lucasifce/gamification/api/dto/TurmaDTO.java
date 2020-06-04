@@ -1,5 +1,6 @@
 package io.github.lucasifce.gamification.api.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,6 +25,7 @@ public class TurmaDTO {
     private String periodo;
 
     @NotNull
+    @JsonProperty("criador_id")
     private Long criadorId;
 
 }
