@@ -1,6 +1,6 @@
 package io.github.lucasifce.gamification.api.controller;
 
-import io.github.lucasifce.gamification.api.dto.AlteraTipoAdminUsuario;
+import io.github.lucasifce.gamification.api.dto.AlteraTipoAdminUsuarioDTO;
 import io.github.lucasifce.gamification.domain.model.Aluno;
 import io.github.lucasifce.gamification.domain.model.Professor;
 import io.github.lucasifce.gamification.domain.model.Usuario;
@@ -36,7 +36,7 @@ public class UsuarioController {
 
     @PatchMapping("/usuario/{id}")
     @ResponseStatus(NO_CONTENT)
-    public void updateAdminUsuario(@RequestBody @Valid AlteraTipoAdminUsuario admin, @PathVariable("id") Long id){
+    public void updateAdminUsuario(@RequestBody @Valid AlteraTipoAdminUsuarioDTO admin, @PathVariable("id") Long id){
         usuarioService.updateAdminUsuario(admin, id);
     }
 

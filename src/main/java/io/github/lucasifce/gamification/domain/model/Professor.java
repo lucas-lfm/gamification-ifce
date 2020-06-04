@@ -1,19 +1,15 @@
 package io.github.lucasifce.gamification.domain.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
+import javax.persistence.*;
 import javax.validation.Valid;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
+import java.util.List;
 
 @Entity
 @Data
@@ -42,5 +38,8 @@ public class Professor {
 	@OneToOne
 	@JoinColumn(name = "usuario_id")
 	private Usuario usuario;
-	
+
+	@JsonIgnoreProperties(value = {"professores", "alunos"})
+	@ManyToMany(mappedBy = "professores")
+	private List<Turma> turmas;
 }

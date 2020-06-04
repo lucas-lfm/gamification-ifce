@@ -64,6 +64,7 @@ public class AlunoServiceImplementation implements AlunoService {
         List<String> erros = validarCampos(aluno);
 
         if(erros.isEmpty()){
+            aluno.getUsuario().setAdmin(false);
             Usuario usuario = usuariosRepository.save(aluno.getUsuario());
             aluno.setUsuario(usuario);
             return converterAlunoUsuario(alunosRepository.save(aluno));
