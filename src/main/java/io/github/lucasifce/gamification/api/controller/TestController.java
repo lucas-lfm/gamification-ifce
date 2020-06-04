@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import io.github.lucasifce.gamification.api.modelDTO.MatriculaTurmaInsertDTO;
+import io.github.lucasifce.gamification.api.dto.MatriculaTurmaInsertDTO;
 import io.github.lucasifce.gamification.domain.exception.EntidadeNaoEncontradaException;
 import io.github.lucasifce.gamification.domain.exception.NegocioException;
 import io.github.lucasifce.gamification.domain.model.Aluno;

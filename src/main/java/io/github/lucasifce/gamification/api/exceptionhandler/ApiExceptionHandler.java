@@ -1,8 +1,8 @@
 package io.github.lucasifce.gamification.api.exceptionhandler;
 
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-
+import io.github.lucasifce.gamification.domain.exception.EntidadeNaoEncontradaException;
+import io.github.lucasifce.gamification.domain.exception.NegocioException;
+import io.github.lucasifce.gamification.domain.exception.NegocioListException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -17,8 +17,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import io.github.lucasifce.gamification.domain.exception.EntidadeNaoEncontradaException;
-import io.github.lucasifce.gamification.domain.exception.NegocioException;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @ControllerAdvice
 public class ApiExceptionHandler extends ResponseEntityExceptionHandler{
@@ -51,7 +52,21 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler{
 		return handleExceptionInternal(ex, problema, new HttpHeaders(), status, request);
 		
 	}
-	
+
+	@ExceptionHandler(NegocioListException.class)
+	public ResponseEntity<Object> handlerListaNegocio(NegocioListException ex, WebRequest request) {
+		var status = HttpStatus.BAD_REQUEST;
+		var problemas = new Problema();
+
+		problemas.setStatus(status.value());
+		problemas.setTitulo(ex.getMessage());
+		problemas.setDataHora(OffsetDateTime.now());
+		problemas.setErros(ex.getErros());
+
+		return handleExceptionInternal(ex, problemas, new HttpHeaders(), status, request);
+
+	}
+
 	@Override
 	protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
 			HttpHeaders headers, HttpStatus status, WebRequest request) {
