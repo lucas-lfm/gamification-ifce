@@ -8,7 +8,7 @@ import javax.validation.constraints.NotEmpty;
 
 @Getter
 @Setter
-public class AlteraTipoAdminUsuario {
+public class AlteraTipoAdminUsuarioDTO {
 
     @Column(name = "admin", nullable = false)
     private Boolean admin;
