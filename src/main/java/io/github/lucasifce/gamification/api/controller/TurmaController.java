@@ -1,5 +1,6 @@
 package io.github.lucasifce.gamification.api.controller;
 
+import io.github.lucasifce.gamification.api.dto.AlunoTurmaInsertListDTO;
 import io.github.lucasifce.gamification.api.dto.ProfessorTurmaInsertListDTO;
 import io.github.lucasifce.gamification.api.dto.TurmaDTO;
 import io.github.lucasifce.gamification.domain.service.TurmaService;
@@ -25,6 +26,12 @@ public class TurmaController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void addNewListProfessor(@RequestBody @Valid ProfessorTurmaInsertListDTO dto){
         turmaService.addNewListProfessor(dto);
+    }
+
+    @PostMapping("/inserir-alunos")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void addNewListAluno(@RequestBody @Valid AlunoTurmaInsertListDTO dto){
+        turmaService.addNewListAluno(dto);
     }
 
 }

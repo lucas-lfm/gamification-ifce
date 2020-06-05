@@ -13,6 +13,14 @@ public interface TurmasRepository extends JpaRepository<Turma, Long>{
             "INNER JOIN turma as t on t.id = pt.turma_id WHERE p.id = :idProfessor and t.id = :idTurma", nativeQuery = true)
     int verficarProfessorEmTurma(@Param("idProfessor") Long idProfessor, @Param("idTurma") Long idTurma);
 
+    @Query(value = "SELECT count(*)  FROM matricula_turma as mt INNER JOIN aluno as a on a.id = mt.aluno_id "+
+            "INNER JOIN turma as t on t.id = mt.turma_id WHERE a.id = :idAluno and t.id = :idTurma", nativeQuery = true)
+    int verficarAlunoEmTurma(@Param("idAluno") Long idAluno, @Param("idTurma") Long idTurma);
+
+    @Query(value = "SELECT count(*)  FROM professor_turma as pt INNER JOIN turma as t on t.id = pt.turma_id "+
+            "WHERE t.criador_id = :idProfessor and t.id = :idTurma", nativeQuery = true)
+    int verificarCriadorTurma(@Param("idProfessor") Long idProfessor, @Param("idTurma") Long idTurma);
+
     Optional<Turma> findByCodigo(String codigo);
 
     //@Modifying

@@ -1,10 +1,13 @@
 package io.github.lucasifce.gamification.domain.service.implementation;
 
+import io.github.lucasifce.gamification.api.dto.AlunoTurmaInsertListDTO;
 import io.github.lucasifce.gamification.api.dto.ProfessorTurmaInsertListDTO;
 import io.github.lucasifce.gamification.api.dto.TurmaDTO;
 import io.github.lucasifce.gamification.domain.exception.NegocioListException;
+import io.github.lucasifce.gamification.domain.model.Aluno;
 import io.github.lucasifce.gamification.domain.model.Professor;
 import io.github.lucasifce.gamification.domain.model.Turma;
+import io.github.lucasifce.gamification.domain.repository.AlunosRepository;
 import io.github.lucasifce.gamification.domain.repository.ProfessoresRepository;
 import io.github.lucasifce.gamification.domain.repository.TurmasRepository;
 import io.github.lucasifce.gamification.domain.service.TurmaService;
@@ -23,6 +26,9 @@ public class TurmaServiceImplementation implements TurmaService {
     @Autowired
     private ProfessoresRepository professoresRepository;
 
+    @Autowired
+    private AlunosRepository alunosRepository;
+
     @Override
     @Transactional
     public TurmaDTO saveNewTurma(TurmaDTO turma){
@@ -37,7 +43,7 @@ public class TurmaServiceImplementation implements TurmaService {
     @Override
     @Transactional
     public void addNewListProfessor(ProfessorTurmaInsertListDTO dto){
-        List<String> erros = validarCamposParaNovoProfessor(dto.getIdTurma(), dto.getListaProfessores());
+        List<String> erros = validarCamposParaProfessor(dto.getIdTurma(), dto.getListaProfessores(), true);
 
         if(erros.isEmpty()){
             Turma turma = pesquisarTurmaId(dto.getIdTurma()).get();
@@ -58,6 +64,35 @@ public class TurmaServiceImplementation implements TurmaService {
         }
     }
 
+    @Override
+    @Transactional
+    public void addNewListAluno(AlunoTurmaInsertListDTO dto){
+        List<String> erros = validarCamposParaAluno(dto.getIdTurma(), dto.getIdProfessor(), dto.getListaAlunos());
+
+        if(erros.isEmpty()){
+            Turma turma = pesquisarTurmaId(dto.getIdTurma()).get();
+            List<Aluno> alunos = turma.getAlunos();
+
+            dto.getListaAlunos().stream()
+                    .forEach(idAluno -> {
+                        alunos.add(pesquisarAlunoId(idAluno).get());
+                    });
+            turma.builder()
+                    .alunos(alunos)//ver se esse código pode ser refatorando em MatriculaTurma
+                    .professores(Collections.EMPTY_LIST)
+                    .build();
+
+        } else {
+            throw new NegocioListException(erros, "Validar campos");
+        }
+    }
+
+    @Override
+    @Transactional
+    public void removeListProfessor(ProfessorTurmaInsertListDTO dto){
+
+    }
+
     /*Validar campos da turma para nova turma*/
     private List<String> validarCampos(TurmaDTO dto){
         List<String> erros = new ArrayList<>();
@@ -74,7 +109,7 @@ public class TurmaServiceImplementation implements TurmaService {
     }
 
     /*metodo para validar turma e professor(es)*/
-    private List<String> validarCamposParaNovoProfessor(Long idTurma, List<Long> idProfessores){
+    private List<String> validarCamposParaProfessor(Long idTurma, List<Long> idProfessores, boolean isNewProfessor){
         List<String> erros = new ArrayList<String>();
         Optional<Turma> turma = pesquisarTurmaId(idTurma);
 
@@ -83,18 +118,63 @@ public class TurmaServiceImplementation implements TurmaService {
         }
         idProfessores.stream()
                 .forEach(idProfessor -> {
-                    System.out.println("Id professor: "+idProfessor);
                     Optional<Professor> professorCadastro = pesquisarProfessorId(idProfessor);
+
                     if(professorCadastro.isEmpty()){
                         erros.add("Nenhuma professor encontrado com o id: "+idProfessor);
                     } else {
-                        int possuiProfessor = turmasRepository.verficarProfessorEmTurma(idProfessor, idTurma);
-                        if(possuiProfessor > 0){
-                            erros.add("Esse professor de id: "+idProfessor+" já está inserido na turma.");
-                        }
+                        if(isNewProfessor) {
+                            int possuiProfessor = turmasRepository.verficarProfessorEmTurma(idProfessor, idTurma);
+                            if (possuiProfessor > 0) {
+                                erros.add("Esse professor de id: " + idProfessor + " já está inserido na turma.");
+                            }
+                        } /*else { //método para verificar se o professor é o criador
+                            int professorCriadorTurma = turmasRepository.verificarCriadorTurma(idProfessor, idTurma);
+                            if(professorCriadorTurma == 0){
+                                erros.add("Você não pode remover o professor criador da turma. Delete a turma para isso");
+                            }
+                        }*/
                     }
                 });
         return erros;
+    }
+
+    /*metodo para validar turma e aluno(s)*/
+    private List<String> validarCamposParaAluno(Long idTurma, Long idProfessor, List<Long> idAlunos){
+        List<String> erros = new ArrayList<String>();
+        Optional<Turma> turma = pesquisarTurmaId(idTurma);
+        Optional<Professor> professor = pesquisarProfessorId(idProfessor);
+
+        if(turma.isEmpty()){
+            erros.add("Nenhuma turma encontrada com esse id.");
+        }
+        if(professor.isEmpty()){
+            erros.add("Nenhuma professor encontrado com o id: "+idProfessor);
+        } else {
+            int professorCadastrado = turmasRepository.verficarProfessorEmTurma(idProfessor, idTurma);
+
+            if(professorCadastrado == 0){
+                erros.add("Esse professor não pode inserir alunos, ele não está cadastro na turma.");
+            }
+            idAlunos.forEach(idAluno -> {
+                Optional<Aluno> alunoCadastro = pesquisarAlunoId(idAluno);
+
+                if (alunoCadastro.isEmpty()) {
+                    erros.add("Nenhuma aluno encontrado com o id: " + idAluno);
+                } else {
+                    int alunoInserido = turmasRepository.verficarAlunoEmTurma(idAluno, idTurma);
+                    if (alunoInserido == 1) {
+                        erros.add("Esse aluno de id: " + idAluno + " já está inserido na turma.");
+                    }
+                }
+            });
+        }
+        return erros;
+    }
+
+    /*Pesquisa aluno por id*/
+    private Optional<Aluno> pesquisarAlunoId(Long id){
+        return alunosRepository.findById(id);
     }
 
     /*Pesquisa professor por id*/
