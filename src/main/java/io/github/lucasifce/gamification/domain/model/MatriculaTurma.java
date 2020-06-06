@@ -13,13 +13,15 @@ import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.*;
 
 @Data
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Entity
 @Table(name = "matricula_turma")
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class MatriculaTurma {
 
 	@EqualsAndHashCode.Include
@@ -27,7 +29,7 @@ public class MatriculaTurma {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	
-	@Column(name = "pontuacao", scale = 2, precision = 5)
+	@Column(name = "pontuacao", scale = 2, precision = 5, columnDefinition = "Decimal(5,2) default '0.0'")
 	private BigDecimal pontuacao;
 	
 	@JsonIgnoreProperties(value = {"turmas", "matriculas"})
