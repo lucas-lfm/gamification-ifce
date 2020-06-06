@@ -73,7 +73,7 @@ public class TurmaServiceImplementation implements TurmaService {
     @Override
     @Transactional
     public void addNewListAluno(AlunoTurmaInsertListDTO dto){
-        List<String> erros = validarCamposParaAluno(dto.getIdTurma(), dto.getIdProfessor(), dto.getListaAlunos());
+        List<String> erros = validarCamposParaAluno(dto.getIdTurma(), dto.getIdProfessor(), dto.getListaAlunos(), true);
 
         if(erros.isEmpty()){
             Turma turma = pesquisarTurmaId(dto.getIdTurma()).get();
@@ -91,6 +91,26 @@ public class TurmaServiceImplementation implements TurmaService {
                         );
                     });
             matriculasTurmaRepository.saveAll(matriculaAlunos);
+        } else {
+            throw new NegocioListException(erros, "Validar campos");
+        }
+    }
+
+    @Override
+    @Transactional
+    public void removeListAluno(AlunoTurmaInsertListDTO dto){
+        List<String> erros = validarCamposParaAluno(dto.getIdTurma(), dto.getIdProfessor(), dto.getListaAlunos(), false);
+
+        if(erros.isEmpty()){
+            List<MatriculaTurma> matriculaAlunos = new ArrayList<MatriculaTurma>();
+
+            dto.getListaAlunos().stream()
+                    .forEach(idAluno -> {
+                        matriculaAlunos.add(
+                                matriculasTurmaRepository.buscarPorTurmaEAluno(idAluno, dto.getIdTurma()).get()
+                        );
+                    });
+            matriculasTurmaRepository.deleteAll(matriculaAlunos);
         } else {
             throw new NegocioListException(erros, "Validar campos");
         }
@@ -149,7 +169,7 @@ public class TurmaServiceImplementation implements TurmaService {
     }
 
     /*metodo para validar turma e aluno(s)*/
-    private List<String> validarCamposParaAluno(Long idTurma, Long idProfessor, List<Long> idAlunos){
+    private List<String> validarCamposParaAluno(Long idTurma, Long idProfessor, List<Long> idAlunos, boolean isNewProfessor){
         List<String> erros = new ArrayList<String>();
         Optional<Turma> turma = pesquisarTurmaId(idTurma);
         Optional<Professor> professor = pesquisarProfessorId(idProfessor);
@@ -163,7 +183,11 @@ public class TurmaServiceImplementation implements TurmaService {
             int professorCadastrado = turmasRepository.verficarProfessorEmTurma(idProfessor, idTurma);
 
             if(professorCadastrado == 0){
-                erros.add("Esse professor não pode inserir alunos, ele não está cadastro na turma.");
+                if(isNewProfessor) {
+                    erros.add("Esse professor não pode inserir alunos, ele não está cadastro na turma.");
+                } else {
+                    erros.add("Esse professor não pode remover alunos, ele não está cadastro na turma.");
+                }
             }
             idAlunos.forEach(idAluno -> {
                 Optional<Aluno> alunoCadastro = pesquisarAlunoId(idAluno);
@@ -171,9 +195,16 @@ public class TurmaServiceImplementation implements TurmaService {
                 if (alunoCadastro.isEmpty()) {
                     erros.add("Nenhuma aluno encontrado com o id: " + idAluno);
                 } else {
-                    int alunoInserido = turmasRepository.verficarAlunoEmTurma(idAluno, idTurma);
-                    if (alunoInserido == 1) {
-                        erros.add("Esse aluno de id: " + idAluno + " já está inserido na turma.");
+                    if(isNewProfessor) {
+                        int alunoInserido = turmasRepository.verficarAlunoEmTurma(idAluno, idTurma);
+                        if (alunoInserido == 1) {
+                            erros.add("Esse aluno de id: " + idAluno + " já está inserido na turma.");
+                        }
+                    } else {
+                        int alunoInserido = turmasRepository.verficarAlunoEmTurma(idAluno, idTurma);
+                        if (alunoInserido == 0) {
+                            erros.add("Esse aluno de id: " + idAluno + " não está inserido na turma.");
+                        }
                     }
                 }
             });

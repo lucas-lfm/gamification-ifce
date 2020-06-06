@@ -34,4 +34,10 @@ public class TurmaController {
         turmaService.addNewListAluno(dto);
     }
 
+    @DeleteMapping("/remover-alunos")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void removeListAluno(@RequestBody @Valid AlunoTurmaInsertListDTO dto){
+        turmaService.removeListAluno(dto);
+    }
+
 }

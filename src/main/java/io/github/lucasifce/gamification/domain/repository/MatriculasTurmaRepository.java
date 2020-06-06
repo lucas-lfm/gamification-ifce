@@ -15,10 +15,10 @@ public interface MatriculasTurmaRepository extends JpaRepository<MatriculaTurma,
 	//Query(value = "SELECT * FROM matricula_turma m INNER JOIN aluno a ON m.aluno_id = a.id INNER JOIN turma t ON m.turma_id = t.id WHERE a.id = :alunoId AND t.id = :turmaId", nativeQuery = true) 
 	//@Query("select m from MatriculaTurma m inner join m.aluno a on m.aluno.id = a.id inner join m.turma t on m.turma.id = t.id where m.aluno.id = :alunoId and m.turma.id = :turmaId")
 	
-	@Query("SELECT m FROM MatriculaTurma m INNER JOIN m.aluno a INNER JOIN m.turma t WHERE a.id = :alunoId AND t.id = :turmaId")
-	Optional<MatriculaTurma> pegarPontuacao(@Param("alunoId") Long alunoId, @Param("turmaId") Long turmaId);
+	@Query("SELECT m FROM MatriculaTurma m INNER JOIN m.aluno a INNER JOIN m.turma t WHERE a.id = :idAluno AND t.id = :idTurma")
+	Optional<MatriculaTurma> buscarPorTurmaEAluno(@Param("idAluno") Long idAluno, @Param("idTurma") Long idTurma);
 
 	@Query("SELECT m FROM MatriculaTurma m WHERE m.id = :id")
 	Optional<MatriculaTurma> buscarPorId(@Param("id") Long id);
-	
+
 }

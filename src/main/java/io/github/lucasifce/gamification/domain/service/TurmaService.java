@@ -9,5 +9,6 @@ public interface TurmaService {
     TurmaDTO saveNewTurma(TurmaDTO turma);
     void addNewListProfessor(ProfessorTurmaInsertListDTO dto);
     void addNewListAluno(AlunoTurmaInsertListDTO dto);
+    void removeListAluno(AlunoTurmaInsertListDTO dto);
     void removeListProfessor(ProfessorTurmaInsertListDTO dto);
 }

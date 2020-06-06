@@ -73,7 +73,7 @@ public class TestController {
         
 		//Optional<MatriculaTurma> matricula = matriculasTurmaRepository.pegarPontuacao(alunoId, turmaId);
 		
-		Optional<MatriculaTurma> matricula = matriculasTurmaRepository.pegarPontuacao(alunoId, turmaId);
+		Optional<MatriculaTurma> matricula = matriculasTurmaRepository.buscarPorTurmaEAluno(alunoId, turmaId);
 		
 		return matricula.orElseThrow(() -> new NegocioException("Registro não encontrado!"));
 		
@@ -101,7 +101,7 @@ public class TestController {
 		matriculaTurma.setPontuacao(BigDecimal.valueOf(0L));
 		matriculaTurma.setAluno(aluno);
 		matriculaTurma.setTurma(turma);
-		
+
 		return matriculasTurmaRepository.save(matriculaTurma);
 		
 	}
