@@ -3,7 +3,8 @@ package io.github.lucasifce.gamification.api.controller;
 import io.github.lucasifce.gamification.api.dto.ProfessorDTO;
 import io.github.lucasifce.gamification.domain.exception.NegocioException;
 import io.github.lucasifce.gamification.domain.model.Professor;
-import io.github.lucasifce.gamification.service.ProfessorService;
+import io.github.lucasifce.gamification.domain.service.ProfessorService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
