@@ -5,9 +5,11 @@ import io.github.lucasifce.gamification.api.dto.ProfessorTurmaInsertListDTO;
 import io.github.lucasifce.gamification.api.dto.TurmaDTO;
 import io.github.lucasifce.gamification.domain.exception.NegocioListException;
 import io.github.lucasifce.gamification.domain.model.Aluno;
+import io.github.lucasifce.gamification.domain.model.MatriculaTurma;
 import io.github.lucasifce.gamification.domain.model.Professor;
 import io.github.lucasifce.gamification.domain.model.Turma;
 import io.github.lucasifce.gamification.domain.repository.AlunosRepository;
+import io.github.lucasifce.gamification.domain.repository.MatriculasTurmaRepository;
 import io.github.lucasifce.gamification.domain.repository.ProfessoresRepository;
 import io.github.lucasifce.gamification.domain.repository.TurmasRepository;
 import io.github.lucasifce.gamification.domain.service.TurmaService;
@@ -15,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.*;
 
 @Service
@@ -28,6 +31,9 @@ public class TurmaServiceImplementation implements TurmaService {
 
     @Autowired
     private AlunosRepository alunosRepository;
+
+    @Autowired
+    private MatriculasTurmaRepository matriculasTurmaRepository;
 
     @Override
     @Transactional
@@ -71,17 +77,20 @@ public class TurmaServiceImplementation implements TurmaService {
 
         if(erros.isEmpty()){
             Turma turma = pesquisarTurmaId(dto.getIdTurma()).get();
-            List<Aluno> alunos = turma.getAlunos();
+
+            List<MatriculaTurma> matriculaAlunos = new ArrayList<MatriculaTurma>();
 
             dto.getListaAlunos().stream()
                     .forEach(idAluno -> {
-                        alunos.add(pesquisarAlunoId(idAluno).get());
+                        matriculaAlunos.add(
+                            MatriculaTurma.builder()
+                                .pontuacao(BigDecimal.valueOf(0L))
+                                .aluno(pesquisarAlunoId(idAluno).get())
+                                .turma(turma)
+                                .build()
+                        );
                     });
-            turma.builder()
-                    .alunos(alunos)//ver se esse código pode ser refatorando em MatriculaTurma
-                    .professores(Collections.EMPTY_LIST)
-                    .build();
-
+            matriculasTurmaRepository.saveAll(matriculaAlunos);
         } else {
             throw new NegocioListException(erros, "Validar campos");
         }
@@ -121,7 +130,7 @@ public class TurmaServiceImplementation implements TurmaService {
                     Optional<Professor> professorCadastro = pesquisarProfessorId(idProfessor);
 
                     if(professorCadastro.isEmpty()){
-                        erros.add("Nenhuma professor encontrado com o id: "+idProfessor);
+                        erros.add("Nenhum professor encontrado com o id: "+idProfessor);
                     } else {
                         if(isNewProfessor) {
                             int possuiProfessor = turmasRepository.verficarProfessorEmTurma(idProfessor, idTurma);
