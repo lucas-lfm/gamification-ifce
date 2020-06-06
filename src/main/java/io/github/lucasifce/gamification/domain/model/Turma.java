@@ -32,6 +32,7 @@ public class Turma {
 	@Column(name = "periodo", length = 45, nullable = false)
 	private String periodo;
 
+	@JsonIgnoreProperties("turmas")
 	@NotNull
 	@ManyToOne
 	@JoinColumn(name = "criador_id")
