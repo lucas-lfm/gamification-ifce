@@ -1,6 +1,6 @@
 package io.github.lucasifce.gamification.domain.service.implementation;
 
-import io.github.lucasifce.gamification.api.dto.AlteraTipoAdminUsuario;
+import io.github.lucasifce.gamification.api.dto.AlteraTipoAdminUsuarioDTO;
 import io.github.lucasifce.gamification.domain.exception.NegocioException;
 import io.github.lucasifce.gamification.domain.model.Aluno;
 import io.github.lucasifce.gamification.domain.model.Professor;
@@ -53,8 +53,9 @@ public class UsuarioServiceImplementation implements UsuarioService {
         return usuario;
     }
 
+    //validar para não deixar atualizar um aluno para admin
     @Override
-    public void updateAdminUsuario(AlteraTipoAdminUsuario admin, Long id){
+    public void updateAdminUsuario(AlteraTipoAdminUsuarioDTO admin, Long id){
         Usuario usuario = pesquisarCadastroUsuarioId(id);
         if(usuario != null){
             usuario.setAdmin(admin.getAdmin());
