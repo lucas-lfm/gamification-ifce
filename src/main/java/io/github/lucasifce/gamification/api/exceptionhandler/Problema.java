@@ -22,6 +22,7 @@ public class Problema {
 	private OffsetDateTime dataHora;
 	private String titulo;
 	private List<Campo> campos;
+	private List<String> erros;
 	
 	@Getter
 	@Setter

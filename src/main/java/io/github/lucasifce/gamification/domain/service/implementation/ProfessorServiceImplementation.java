@@ -1,21 +1,19 @@
 package io.github.lucasifce.gamification.domain.service.implementation;
 
 import io.github.lucasifce.gamification.api.dto.ProfessorDTO;
-import io.github.lucasifce.gamification.domain.exception.NegocioException;
+import io.github.lucasifce.gamification.domain.exception.EntidadeNaoEncontradaException;
+import io.github.lucasifce.gamification.domain.exception.NegocioListException;
 import io.github.lucasifce.gamification.domain.model.Professor;
 import io.github.lucasifce.gamification.domain.model.Usuario;
 import io.github.lucasifce.gamification.domain.repository.ProfessoresRepository;
 import io.github.lucasifce.gamification.domain.repository.UsuariosRepository;
 import io.github.lucasifce.gamification.domain.service.ProfessorService;
-
-import org.hibernate.mapping.Any;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.swing.text.html.Option;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -52,47 +50,41 @@ public class ProfessorServiceImplementation implements ProfessorService {
     @Override
     public Professor getProfessorById(Long id){
         return professoresRepository.findById(id)
-                .orElseThrow(() -> new NegocioException("Professor não encontrado."));
+                .orElseThrow(() -> new EntidadeNaoEncontradaException("Professor não encontrado."));
     }
 
     @Override
     public ProfessorDTO getProfessorByIdDTO(Long id){
         return converterProfessor(professoresRepository.findById(id)
-                .orElseThrow(() -> new NegocioException("Professor não encontrado.")));
+                .orElseThrow(() -> new EntidadeNaoEncontradaException("Professor não encontrado.")));
     }
 
     @Override
     @Transactional
     public Professor save(Professor professor){
-        if(pesquisarCadastroEmailProfessor(professor.getEmail()) == null) {
-            if(pesquisarCadastroUsuario(professor.getUsuario().getLogin()) == null) {
-                Usuario usuario = usuariosRepository.save(professor.getUsuario());
-                professor.setUsuario(usuario);
-                return professoresRepository.save(professor);
-            } else {
-                throw new NegocioException("Nome de usuário já está em uso.");
-            }
+        List<String> erros = validarCampos(professor);
+
+        if(erros.isEmpty()){
+            Usuario usuario = usuariosRepository.save(professor.getUsuario());
+            professor.setUsuario(usuario);
+            return professoresRepository.save(professor);
         } else {
-            throw new NegocioException("Email já cadastrado.");
+            throw new NegocioListException(erros, "Validação campos.");
         }
     }
 
     @Override
     public ProfessorDTO update(ProfessorDTO dto, Long id) {
         Optional<Professor> professor = professoresRepository.findById(id);
+        List<String> erros = validarCampos(professor, dto);
 
-        if(!professor.isEmpty()) {
-            if (!professor.get().getEmail().equalsIgnoreCase(dto.getEmail())
-                    && pesquisarCadastroEmailProfessor(dto.getEmail()) != null) {
-                throw new NegocioException("Email já cadastrado.");
-            } else {
-                professor.get().setNome(dto.getNome());
-                professor.get().setEmail(dto.getEmail());
-                professor.get().setTelefone(dto.getTelefone());
-                return converterProfessor(professoresRepository.save(professor.get()));
-            }
+        if(erros.isEmpty()){
+            professor.get().setNome(dto.getNome());
+            professor.get().setEmail(dto.getEmail());
+            professor.get().setTelefone(dto.getTelefone());
+            return converterProfessor(professoresRepository.save(professor.get()));
         } else {
-            throw new NegocioException("Professor não encontrado.");
+            throw new NegocioListException(erros, "Validação campos.");
         }
     }
 
@@ -104,17 +96,47 @@ public class ProfessorServiceImplementation implements ProfessorService {
                     professoresRepository.delete(professorExistente);
                     usuariosRepository.deleteById(professorExistente.getUsuario().getId());
                     return professorExistente;
-                }).orElseThrow(() -> new NegocioException("Professor não encontrado."));
+                }).orElseThrow(() -> new EntidadeNaoEncontradaException("Professor não encontrado."));
+    }
+
+    /*metodo para validar campos para salvar*/
+    private List<String> validarCampos(Professor professor){
+        List<String> erros = new ArrayList<String>();
+
+        if(pesquisarCadastroEmailProfessor(professor.getEmail()) != null) {
+            erros.add("Email já cadastrado.");
+        }
+        if(pesquisarCadastroUsuario(professor.getUsuario().getLogin()) != null) {
+            erros.add("Nome de usuário já está em uso.");
+        }
+        return erros;
+    }
+
+    /*metodo para validar campos para atualizar*/
+    private List<String> validarCampos(Optional<Professor> professor, ProfessorDTO dto){
+        List<String> erros = new ArrayList<String>();
+
+        if(professor.isEmpty()){
+            erros.add("Professor não encontrado.");
+        } else {
+            if (!professor.get().getEmail().equalsIgnoreCase(dto.getEmail())
+                    && pesquisarCadastroEmailProfessor(dto.getEmail()) != null) {
+                erros.add("Email já cadastrado.");
+            }
+        }
+        return erros;
     }
 
     /*Verifica se já existe um login desse usuário*/
     private Usuario pesquisarCadastroUsuario(String login){
-        return usuariosRepository.findByLogin(login);
+        Optional<Usuario> usuario = usuariosRepository.findByLogin(login);
+        return usuario.isPresent() ? usuario.get() : null;
     }
 
     /*Verifica se já existe um email desse professor*/
     private Professor pesquisarCadastroEmailProfessor(String email){
-        return professoresRepository.findByEmail(email);
+        Optional<Professor> professor = professoresRepository.findByEmail(email);
+        return professor.isPresent() ? professor.get() : null;
     }
 
     /*Server para converter Professor para DTO*/
