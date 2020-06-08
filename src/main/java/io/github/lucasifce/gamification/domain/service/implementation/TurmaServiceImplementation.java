@@ -3,6 +3,7 @@ package io.github.lucasifce.gamification.domain.service.implementation;
 import io.github.lucasifce.gamification.api.dto.AlunoTurmaInsertListDTO;
 import io.github.lucasifce.gamification.api.dto.ProfessorTurmaInsertListDTO;
 import io.github.lucasifce.gamification.api.dto.TurmaDTO;
+import io.github.lucasifce.gamification.domain.enums.StatusTurma;
 import io.github.lucasifce.gamification.domain.exception.NegocioListException;
 import io.github.lucasifce.gamification.domain.model.Aluno;
 import io.github.lucasifce.gamification.domain.model.MatriculaTurma;
@@ -40,6 +41,7 @@ public class TurmaServiceImplementation implements TurmaService {
     public TurmaDTO saveNewTurma(TurmaDTO turma){
         List<String> erros = validarCampos(turma);
         if(erros.isEmpty()){
+            turma.setStatus(StatusTurma.ATIVO);
             return converterTurma(turmasRepository.save(converterTurmaDTO(turma)));
         } else {
             throw new NegocioListException(erros, "Validar Campos");
@@ -126,7 +128,7 @@ public class TurmaServiceImplementation implements TurmaService {
     private List<String> validarCampos(TurmaDTO dto){
         List<String> erros = new ArrayList<>();
         Optional<Turma> turma = turmasRepository.findByCodigo(dto.getCodigo());
-        Optional<Professor> professorCadastro = pesquisarProfessorId(dto.getCriadorId());
+        Optional<Professor> professorCadastro = pesquisarProfessorId(dto.getResponsavelId());
 
         if(!turma.isEmpty()){
             erros.add("Código de turma já cadastrado.");
@@ -233,17 +235,19 @@ public class TurmaServiceImplementation implements TurmaService {
                 .id(turma.getId())
                 .codigo(turma.getCodigo())
                 .periodo(turma.getPeriodo())
-                .criadorId(turma.getCriadorTurma().getId())
+                .status(turma.getStatus())
+                .responsavelId(turma.getResponsavelId().getId())
                 .build();
     }
 
     /*mapeando turmaDTO para turma*/
     private Turma converterTurmaDTO(TurmaDTO dto){
-        Optional<Professor> professor = professoresRepository.findById(dto.getCriadorId());
+        Optional<Professor> professor = professoresRepository.findById(dto.getResponsavelId());
         return Turma.builder()
                 .codigo(dto.getCodigo())
                 .periodo(dto.getPeriodo())
-                .criadorTurma(professor.get())
+                .responsavelId(professor.get())
+                .status(dto.getStatus())
                 .professores(Arrays.asList(professor.get()))
                 .build();
     }
