@@ -2,6 +2,7 @@ package io.github.lucasifce.gamification.domain.service.implementation;
 
 import io.github.lucasifce.gamification.api.dto.AlunoTurmaInsertListDTO;
 import io.github.lucasifce.gamification.api.dto.ProfessorTurmaInsertListDTO;
+import io.github.lucasifce.gamification.api.dto.ProfessorTurmaRemoveListDTO;
 import io.github.lucasifce.gamification.api.dto.TurmaDTO;
 import io.github.lucasifce.gamification.domain.enums.StatusTurma;
 import io.github.lucasifce.gamification.domain.exception.NegocioListException;
@@ -51,7 +52,7 @@ public class TurmaServiceImplementation implements TurmaService {
     @Override
     @Transactional
     public void addNewListProfessor(ProfessorTurmaInsertListDTO dto){
-        List<String> erros = validarCamposParaProfessor(dto, true);
+        List<String> erros = validarCamposParaProfessorInsert(dto);
 
         if(erros.isEmpty()){
             Turma turma = pesquisarTurmaId(dto.getIdTurma()).get();
@@ -67,6 +68,21 @@ public class TurmaServiceImplementation implements TurmaService {
                     .professores(professores)
                     .build();
             turmasRepository.save(turma);
+        } else {
+            throw new NegocioListException(erros, "Validar campos");
+        }
+    }
+
+    @Override
+    @Transactional
+    public void removeListProfessor(ProfessorTurmaRemoveListDTO dto){
+        List<String> erros = validarCamposParaProfessorRemove(dto);
+
+        if(erros.isEmpty()){
+            dto.getListaProfessores().stream()
+                .forEach(idProfessor -> {
+                    turmasRepository.deletarProfessorTurma(idProfessor, dto.getIdTurma());
+                });
         } else {
             throw new NegocioListException(erros, "Validar campos");
         }
@@ -118,12 +134,6 @@ public class TurmaServiceImplementation implements TurmaService {
         }
     }
 
-    @Override
-    @Transactional
-    public void removeListProfessor(ProfessorTurmaInsertListDTO dto){
-
-    }
-
     /*Validar campos da turma para nova turma*/
     private List<String> validarCampos(TurmaDTO dto){
         List<String> erros = new ArrayList<>();
@@ -139,8 +149,40 @@ public class TurmaServiceImplementation implements TurmaService {
         return erros;
     }
 
-    /*metodo para validar turma e professor(es)*/
-    private List<String> validarCamposParaProfessor(ProfessorTurmaInsertListDTO dto, boolean isNewProfessor){
+    /*metodo para validar turma e professor(es) para remove*/
+    private List<String> validarCamposParaProfessorRemove(ProfessorTurmaRemoveListDTO dto){
+        List<String> erros = new ArrayList<String>();
+        Optional<Turma> turma = pesquisarTurmaId(dto.getIdTurma());
+
+
+        if(turma.isEmpty()){
+            erros.add("Nenhuma turma encontrada com esse id.");
+        }
+        dto.getListaProfessores().stream()
+            .forEach(idProfessor -> {
+                Optional<Professor> professorRemover = pesquisarProfessorId(idProfessor);
+
+                if(professorRemover.isEmpty()){
+                    erros.add("Nenhum professor encontrado com o id: "+idProfessor);
+                } else {
+                    if(!turma.isEmpty()) {
+                        Long professorResponsavel = turma.get().getResponsavelId().getId();
+                        if(professorRemover.get().getId().equals(professorResponsavel)){
+                            erros.add("O professor responsável não pode ser removido. Passe a turma para outro professor para poder ser removido.");
+                        } else {
+                            int possuiProfessor = turmasRepository.verficarProfessorEmTurma(idProfessor, dto.getIdTurma());
+                            if (possuiProfessor == 0) {
+                                erros.add("Esse professor de id: " + idProfessor + " não está inserido na turma.");
+                            }
+                        }
+                    }
+                }
+            });
+        return erros;
+    }
+
+    /*metodo para validar turma e professor(es) para insert*/
+    private List<String> validarCamposParaProfessorInsert(ProfessorTurmaInsertListDTO dto){
         List<String> erros = new ArrayList<String>();
         Optional<Turma> turma = pesquisarTurmaId(dto.getIdTurma());
         Optional<Professor> professorResponsavel = pesquisarProfessorId(dto.getIdResponsavel());
@@ -162,11 +204,9 @@ public class TurmaServiceImplementation implements TurmaService {
                             if(professorCadastro.isEmpty()){
                                 erros.add("Nenhum professor encontrado com o id: "+idProfessor);
                             } else {
-                                if(isNewProfessor) {
-                                    int possuiProfessor = turmasRepository.verficarProfessorEmTurma(idProfessor, dto.getIdTurma());
-                                    if (possuiProfessor > 0) {
-                                        erros.add("Esse professor de id: " + idProfessor + " já está inserido na turma.");
-                                    }
+                                int possuiProfessor = turmasRepository.verficarProfessorEmTurma(idProfessor, dto.getIdTurma());
+                                if (possuiProfessor > 0) {
+                                    erros.add("Esse professor de id: " + idProfessor + " já está inserido na turma.");
                                 }
                             }
                         });

@@ -2,6 +2,7 @@ package io.github.lucasifce.gamification.domain.repository;
 
 import io.github.lucasifce.gamification.domain.model.Turma;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -22,6 +23,11 @@ public interface TurmasRepository extends JpaRepository<Turma, Long>{
     int verificarCriadorTurma(@Param("idProfessor") Long idProfessor, @Param("idTurma") Long idTurma);
 
     Optional<Turma> findByCodigo(String codigo);
+
+    @Modifying
+    @Query(value = "DELETE FROM professor_turma as pt WHERE pt.turma_id = :idTurma AND pt.professor_id = :idProfessor",
+        nativeQuery = true)
+    void deletarProfessorTurma(@Param("idProfessor") Long idProfessor, @Param("idTurma") Long idTurma);
 
     //@Modifying
     //@Query( value = " INSERT INTO Turma (codigo, periodo, criador_id) VALUES (:codigo, :periodo, :criador_id)",
