@@ -3,6 +3,7 @@ package io.github.lucasifce.gamification.domain.service.implementation;
 import io.github.lucasifce.gamification.api.dto.AlunoTurmaInsertListDTO;
 import io.github.lucasifce.gamification.api.dto.ProfessorTurmaInsertListDTO;
 import io.github.lucasifce.gamification.api.dto.TurmaDTO;
+import io.github.lucasifce.gamification.domain.enums.StatusTurma;
 import io.github.lucasifce.gamification.domain.exception.NegocioListException;
 import io.github.lucasifce.gamification.domain.model.Aluno;
 import io.github.lucasifce.gamification.domain.model.MatriculaTurma;
@@ -40,6 +41,7 @@ public class TurmaServiceImplementation implements TurmaService {
     public TurmaDTO saveNewTurma(TurmaDTO turma){
         List<String> erros = validarCampos(turma);
         if(erros.isEmpty()){
+            turma.setStatus(StatusTurma.ATIVO);
             return converterTurma(turmasRepository.save(converterTurmaDTO(turma)));
         } else {
             throw new NegocioListException(erros, "Validar Campos");
@@ -49,7 +51,7 @@ public class TurmaServiceImplementation implements TurmaService {
     @Override
     @Transactional
     public void addNewListProfessor(ProfessorTurmaInsertListDTO dto){
-        List<String> erros = validarCamposParaProfessor(dto.getIdTurma(), dto.getListaProfessores(), true);
+        List<String> erros = validarCamposParaProfessor(dto, true);
 
         if(erros.isEmpty()){
             Turma turma = pesquisarTurmaId(dto.getIdTurma()).get();
@@ -126,7 +128,7 @@ public class TurmaServiceImplementation implements TurmaService {
     private List<String> validarCampos(TurmaDTO dto){
         List<String> erros = new ArrayList<>();
         Optional<Turma> turma = turmasRepository.findByCodigo(dto.getCodigo());
-        Optional<Professor> professorCadastro = pesquisarProfessorId(dto.getCriadorId());
+        Optional<Professor> professorCadastro = pesquisarProfessorId(dto.getResponsavelId());
 
         if(!turma.isEmpty()){
             erros.add("Código de turma já cadastrado.");
@@ -138,33 +140,39 @@ public class TurmaServiceImplementation implements TurmaService {
     }
 
     /*metodo para validar turma e professor(es)*/
-    private List<String> validarCamposParaProfessor(Long idTurma, List<Long> idProfessores, boolean isNewProfessor){
+    private List<String> validarCamposParaProfessor(ProfessorTurmaInsertListDTO dto, boolean isNewProfessor){
         List<String> erros = new ArrayList<String>();
-        Optional<Turma> turma = pesquisarTurmaId(idTurma);
+        Optional<Turma> turma = pesquisarTurmaId(dto.getIdTurma());
+        Optional<Professor> professorResponsavel = pesquisarProfessorId(dto.getIdResponsavel());
 
         if(turma.isEmpty()){
             erros.add("Nenhuma turma encontrada com esse id.");
         }
-        idProfessores.stream()
-                .forEach(idProfessor -> {
-                    Optional<Professor> professorCadastro = pesquisarProfessorId(idProfessor);
+        if(professorResponsavel.isEmpty()){
+            erros.add("Nenhum professor responsável encontrada com esse id.");
+        } else {
+            if(!turma.isEmpty()){
+                if(!turma.get().getResponsavelId().getId().equals(professorResponsavel.get().getId())){
+                    erros.add("Apenas o professor responsável podem inserir professores.");
+                } else {
+                    dto.getListaProfessores().stream()
+                        .forEach(idProfessor -> {
+                            Optional<Professor> professorCadastro = pesquisarProfessorId(idProfessor);
 
-                    if(professorCadastro.isEmpty()){
-                        erros.add("Nenhum professor encontrado com o id: "+idProfessor);
-                    } else {
-                        if(isNewProfessor) {
-                            int possuiProfessor = turmasRepository.verficarProfessorEmTurma(idProfessor, idTurma);
-                            if (possuiProfessor > 0) {
-                                erros.add("Esse professor de id: " + idProfessor + " já está inserido na turma.");
+                            if(professorCadastro.isEmpty()){
+                                erros.add("Nenhum professor encontrado com o id: "+idProfessor);
+                            } else {
+                                if(isNewProfessor) {
+                                    int possuiProfessor = turmasRepository.verficarProfessorEmTurma(idProfessor, dto.getIdTurma());
+                                    if (possuiProfessor > 0) {
+                                        erros.add("Esse professor de id: " + idProfessor + " já está inserido na turma.");
+                                    }
+                                }
                             }
-                        } /*else { //método para verificar se o professor é o criador
-                            int professorCriadorTurma = turmasRepository.verificarCriadorTurma(idProfessor, idTurma);
-                            if(professorCriadorTurma == 0){
-                                erros.add("Você não pode remover o professor criador da turma. Delete a turma para isso");
-                            }
-                        }*/
-                    }
-                });
+                        });
+                }
+            }
+        }
         return erros;
     }
 
@@ -233,17 +241,19 @@ public class TurmaServiceImplementation implements TurmaService {
                 .id(turma.getId())
                 .codigo(turma.getCodigo())
                 .periodo(turma.getPeriodo())
-                .criadorId(turma.getCriadorTurma().getId())
+                .status(turma.getStatus())
+                .responsavelId(turma.getResponsavelId().getId())
                 .build();
     }
 
     /*mapeando turmaDTO para turma*/
     private Turma converterTurmaDTO(TurmaDTO dto){
-        Optional<Professor> professor = professoresRepository.findById(dto.getCriadorId());
+        Optional<Professor> professor = professoresRepository.findById(dto.getResponsavelId());
         return Turma.builder()
                 .codigo(dto.getCodigo())
                 .periodo(dto.getPeriodo())
-                .criadorTurma(professor.get())
+                .responsavelId(professor.get())
+                .status(dto.getStatus())
                 .professores(Arrays.asList(professor.get()))
                 .build();
     }

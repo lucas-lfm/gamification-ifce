@@ -16,6 +16,10 @@ public class ProfessorTurmaInsertListDTO {
     private Long idTurma;
 
     @NotNull
+    @JsonProperty("id_responsavel")
+    private Long idResponsavel;
+
+    @NotNull
     @JsonProperty("lista_professores")
     private List<Long> listaProfessores;
 
