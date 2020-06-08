@@ -51,7 +51,7 @@ public class TurmaServiceImplementation implements TurmaService {
     @Override
     @Transactional
     public void addNewListProfessor(ProfessorTurmaInsertListDTO dto){
-        List<String> erros = validarCamposParaProfessor(dto.getIdTurma(), dto.getListaProfessores(), true);
+        List<String> erros = validarCamposParaProfessor(dto, true);
 
         if(erros.isEmpty()){
             Turma turma = pesquisarTurmaId(dto.getIdTurma()).get();
@@ -140,33 +140,39 @@ public class TurmaServiceImplementation implements TurmaService {
     }
 
     /*metodo para validar turma e professor(es)*/
-    private List<String> validarCamposParaProfessor(Long idTurma, List<Long> idProfessores, boolean isNewProfessor){
+    private List<String> validarCamposParaProfessor(ProfessorTurmaInsertListDTO dto, boolean isNewProfessor){
         List<String> erros = new ArrayList<String>();
-        Optional<Turma> turma = pesquisarTurmaId(idTurma);
+        Optional<Turma> turma = pesquisarTurmaId(dto.getIdTurma());
+        Optional<Professor> professorResponsavel = pesquisarProfessorId(dto.getIdResponsavel());
 
         if(turma.isEmpty()){
             erros.add("Nenhuma turma encontrada com esse id.");
         }
-        idProfessores.stream()
-                .forEach(idProfessor -> {
-                    Optional<Professor> professorCadastro = pesquisarProfessorId(idProfessor);
+        if(professorResponsavel.isEmpty()){
+            erros.add("Nenhum professor responsável encontrada com esse id.");
+        } else {
+            if(!turma.isEmpty()){
+                if(!turma.get().getResponsavelId().getId().equals(professorResponsavel.get().getId())){
+                    erros.add("Apenas o professor responsável podem inserir professores.");
+                } else {
+                    dto.getListaProfessores().stream()
+                        .forEach(idProfessor -> {
+                            Optional<Professor> professorCadastro = pesquisarProfessorId(idProfessor);
 
-                    if(professorCadastro.isEmpty()){
-                        erros.add("Nenhum professor encontrado com o id: "+idProfessor);
-                    } else {
-                        if(isNewProfessor) {
-                            int possuiProfessor = turmasRepository.verficarProfessorEmTurma(idProfessor, idTurma);
-                            if (possuiProfessor > 0) {
-                                erros.add("Esse professor de id: " + idProfessor + " já está inserido na turma.");
+                            if(professorCadastro.isEmpty()){
+                                erros.add("Nenhum professor encontrado com o id: "+idProfessor);
+                            } else {
+                                if(isNewProfessor) {
+                                    int possuiProfessor = turmasRepository.verficarProfessorEmTurma(idProfessor, dto.getIdTurma());
+                                    if (possuiProfessor > 0) {
+                                        erros.add("Esse professor de id: " + idProfessor + " já está inserido na turma.");
+                                    }
+                                }
                             }
-                        } /*else { //método para verificar se o professor é o criador
-                            int professorCriadorTurma = turmasRepository.verificarCriadorTurma(idProfessor, idTurma);
-                            if(professorCriadorTurma == 0){
-                                erros.add("Você não pode remover o professor criador da turma. Delete a turma para isso");
-                            }
-                        }*/
-                    }
-                });
+                        });
+                }
+            }
+        }
         return erros;
     }
 
