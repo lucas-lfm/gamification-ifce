@@ -1,9 +1,6 @@
 package io.github.lucasifce.gamification.domain.service.implementation;
 
-import io.github.lucasifce.gamification.api.dto.AlunoTurmaInsertListDTO;
-import io.github.lucasifce.gamification.api.dto.ProfessorTurmaInsertListDTO;
-import io.github.lucasifce.gamification.api.dto.ProfessorTurmaRemoveListDTO;
-import io.github.lucasifce.gamification.api.dto.TurmaDTO;
+import io.github.lucasifce.gamification.api.dto.*;
 import io.github.lucasifce.gamification.domain.enums.StatusTurma;
 import io.github.lucasifce.gamification.domain.exception.NegocioListException;
 import io.github.lucasifce.gamification.domain.model.Aluno;
@@ -134,6 +131,18 @@ public class TurmaServiceImplementation implements TurmaService {
         }
     }
 
+    @Override
+    @Transactional
+    public void updateProfessorResponsavel(TrocaResponsavelTurmaDTO dto){
+        List<String> erros = validarCamposTrocaResponsavel(dto);
+
+        if(erros.isEmpty()){
+            turmasRepository.updateProfessorResponsavel(dto.getIdNovoResponsavel(), dto.getIdTurma());
+        } else {
+            throw new NegocioListException(erros, "Validar campos");
+        }
+    }
+
     /*Validar campos da turma para nova turma*/
     private List<String> validarCampos(TurmaDTO dto){
         List<String> erros = new ArrayList<>();
@@ -149,11 +158,41 @@ public class TurmaServiceImplementation implements TurmaService {
         return erros;
     }
 
+    /*metodo para validar troca de responsavel */
+    private List<String> validarCamposTrocaResponsavel(TrocaResponsavelTurmaDTO dto){
+        List<String> erros = new ArrayList<>();
+        Optional<Turma> turma = pesquisarTurmaId(dto.getIdTurma());
+
+        if(turma.isEmpty()){
+            erros.add("Nenhuma turma encontrada com esse id.");
+        } else {
+            Optional<Professor> professorResponsavel = pesquisarProfessorId(dto.getIdResponsavel());
+            Optional<Professor> novoResponsavel = pesquisarProfessorId(dto.getIdNovoResponsavel());
+
+            if(professorResponsavel.isEmpty()){
+                erros.add("Nenhum professor responsavel encontrado com o id: "+dto.getIdResponsavel());
+            } else {
+                if(!turma.get().getResponsavelId().getId().equals(professorResponsavel.get().getId())){
+                    erros.add("Professor com id: "+professorResponsavel.get().getId()+" não é o responsável pela turma.");
+                }
+            }
+            if(novoResponsavel.isEmpty()){
+                erros.add("Nenhum professor encontrado com o id: "+dto.getIdNovoResponsavel()+ " para o novo professor responsável.");
+            } else {
+                int possuiProfessor = turmasRepository.verficarProfessorEmTurma(dto.getIdNovoResponsavel(), dto.getIdTurma());
+                if (possuiProfessor == 0) {
+                    erros.add("Esse professor de id: " + dto.getIdNovoResponsavel() + " não está inserido na turma. " +
+                            "Insira-o primeiro para depois realizar a troca de responsável.");
+                }
+            }
+        }
+        return erros;
+    }
+
     /*metodo para validar turma e professor(es) para remove*/
     private List<String> validarCamposParaProfessorRemove(ProfessorTurmaRemoveListDTO dto){
         List<String> erros = new ArrayList<String>();
         Optional<Turma> turma = pesquisarTurmaId(dto.getIdTurma());
-
 
         if(turma.isEmpty()){
             erros.add("Nenhuma turma encontrada com esse id.");

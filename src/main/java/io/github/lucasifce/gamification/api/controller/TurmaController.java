@@ -1,9 +1,6 @@
 package io.github.lucasifce.gamification.api.controller;
 
-import io.github.lucasifce.gamification.api.dto.AlunoTurmaInsertListDTO;
-import io.github.lucasifce.gamification.api.dto.ProfessorTurmaInsertListDTO;
-import io.github.lucasifce.gamification.api.dto.ProfessorTurmaRemoveListDTO;
-import io.github.lucasifce.gamification.api.dto.TurmaDTO;
+import io.github.lucasifce.gamification.api.dto.*;
 import io.github.lucasifce.gamification.domain.service.TurmaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -45,6 +42,12 @@ public class TurmaController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void removeListAluno(@RequestBody @Valid AlunoTurmaInsertListDTO dto){
         turmaService.removeListAluno(dto);
+    }
+
+    @PatchMapping("/trocar-responsavel")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void updateResponsavelTurma(@RequestBody @Valid TrocaResponsavelTurmaDTO dto) {
+        turmaService.updateProfessorResponsavel(dto);
     }
 
 }

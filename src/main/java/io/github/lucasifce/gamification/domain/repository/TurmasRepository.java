@@ -22,12 +22,17 @@ public interface TurmasRepository extends JpaRepository<Turma, Long>{
             "WHERE t.criador_id = :idProfessor and t.id = :idTurma", nativeQuery = true)
     int verificarCriadorTurma(@Param("idProfessor") Long idProfessor, @Param("idTurma") Long idTurma);
 
-    Optional<Turma> findByCodigo(String codigo);
-
     @Modifying
     @Query(value = "DELETE FROM professor_turma as pt WHERE pt.turma_id = :idTurma AND pt.professor_id = :idProfessor",
         nativeQuery = true)
     void deletarProfessorTurma(@Param("idProfessor") Long idProfessor, @Param("idTurma") Long idTurma);
+
+    @Modifying
+    @Query(value = "UPDATE turma as t SET t.responsavel_id = :idNovoResponsavel WHERE t.id = :idTurma",
+            nativeQuery = true)
+    void updateProfessorResponsavel(@Param("idNovoResponsavel") Long idNovoResponsavel, @Param("idTurma") Long idTurma);
+
+    Optional<Turma> findByCodigo(String codigo);
 
     //@Modifying
     //@Query( value = " INSERT INTO Turma (codigo, periodo, criador_id) VALUES (:codigo, :periodo, :criador_id)",

@@ -1,9 +1,6 @@
 package io.github.lucasifce.gamification.domain.service;
 
-import io.github.lucasifce.gamification.api.dto.AlunoTurmaInsertListDTO;
-import io.github.lucasifce.gamification.api.dto.ProfessorTurmaInsertListDTO;
-import io.github.lucasifce.gamification.api.dto.ProfessorTurmaRemoveListDTO;
-import io.github.lucasifce.gamification.api.dto.TurmaDTO;
+import io.github.lucasifce.gamification.api.dto.*;
 
 public interface TurmaService {
 
@@ -12,4 +9,5 @@ public interface TurmaService {
     void addNewListAluno(AlunoTurmaInsertListDTO dto);
     void removeListAluno(AlunoTurmaInsertListDTO dto);
     void removeListProfessor(ProfessorTurmaRemoveListDTO dto);
+    void updateProfessorResponsavel(TrocaResponsavelTurmaDTO dto);
 }
