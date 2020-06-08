@@ -143,7 +143,22 @@ public class TurmaServiceImplementation implements TurmaService {
         }
     }
 
-    /*Validar campos da turma para nova turma*/
+    @Override
+    @Transactional
+    public TurmaDTO updateStatus(TrocaStatusTurmaDTO dto, Long idTurma){
+        List<String> erros = validarCamposTrocaStatus(dto, idTurma);
+
+        if(erros.isEmpty()){
+            turmasRepository.updateStatusTurma(dto.getStatus().toUpperCase(), idTurma);
+            TurmaDTO turma = converterTurma(pesquisarTurmaId(idTurma).get());
+            turma.setStatus(StatusTurma.valueOf(dto.getStatus().toUpperCase()));
+            return turma;
+        } else {
+            throw new NegocioListException(erros, "Validar campos");
+        }
+    }
+
+    /*Validar campos para nova turma*/
     private List<String> validarCampos(TurmaDTO dto){
         List<String> erros = new ArrayList<>();
         Optional<Turma> turma = turmasRepository.findByCodigo(dto.getCodigo());
@@ -154,6 +169,38 @@ public class TurmaServiceImplementation implements TurmaService {
         }
         if(professorCadastro.isEmpty()){
             erros.add("Professor não cadastrado.");
+        }
+        return erros;
+    }
+
+    /*Validar campos da trocar status da turma*/
+    private List<String> validarCamposTrocaStatus(TrocaStatusTurmaDTO dto, Long idTurma){
+        List<String> erros = new ArrayList<>();
+        Optional<Turma> turma = pesquisarTurmaId(idTurma);
+
+        if(turma.isEmpty()){
+            erros.add("Nenhuma turma encontrada com esse id.");
+        } else {
+            Optional<Professor> professorResponsavel = pesquisarProfessorId(dto.getIdResponsavel());
+
+            if(professorResponsavel.isEmpty()){
+                erros.add("Nenhum professor responsavel encontrado com o id: "+dto.getIdResponsavel());
+            } else {
+                if(!turma.get().getResponsavelId().getId().equals(dto.getIdResponsavel())){
+                    erros.add("Apenas o professor responsável pode alterar o status da turma.");
+                }
+            }
+
+            if(!StatusTurma.verificarStatus(dto.getStatus())){
+                erros.add("Status inserido não existe.");
+            }
+            if(turma.get().getStatus().toString().equalsIgnoreCase(dto.getStatus())) {
+                erros.add("Essa turma já encontra-se com o status que deseja alterar.");
+            } else {
+                if (turma.get().getStatus().toString().equalsIgnoreCase(StatusTurma.FINALIZADO.toString())) {
+                    erros.add("Você não pode alterar o status da turma que está FINALIZADO.");
+                }
+            }
         }
         return erros;
     }

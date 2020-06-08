@@ -1,5 +1,6 @@
 package io.github.lucasifce.gamification.domain.repository;
 
+import io.github.lucasifce.gamification.domain.enums.StatusTurma;
 import io.github.lucasifce.gamification.domain.model.Turma;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -31,6 +32,11 @@ public interface TurmasRepository extends JpaRepository<Turma, Long>{
     @Query(value = "UPDATE turma as t SET t.responsavel_id = :idNovoResponsavel WHERE t.id = :idTurma",
             nativeQuery = true)
     void updateProfessorResponsavel(@Param("idNovoResponsavel") Long idNovoResponsavel, @Param("idTurma") Long idTurma);
+
+    @Modifying
+    @Query(value = "UPDATE turma as t SET t.status = :status WHERE t.id = :idTurma",
+            nativeQuery = true)
+    void updateStatusTurma(@Param("status") String status, @Param("idTurma") Long idTurma);
 
     Optional<Turma> findByCodigo(String codigo);
 
