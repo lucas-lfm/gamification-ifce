@@ -1,8 +1,8 @@
 package io.github.lucasifce.gamification.domain.service;
 
-import io.github.lucasifce.gamification.api.dto.AlunoTurmaInsertListDTO;
-import io.github.lucasifce.gamification.api.dto.ProfessorTurmaInsertListDTO;
-import io.github.lucasifce.gamification.api.dto.TurmaDTO;
+import io.github.lucasifce.gamification.api.dto.matriculaTurma.AlunoTurmaInsertListDTO;
+import io.github.lucasifce.gamification.api.dto.professor.ProfessorTurmaInsertListDTO;
+import io.github.lucasifce.gamification.api.dto.turma.TurmaDTO;
 
 public interface TurmaService {
 

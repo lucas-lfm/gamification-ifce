@@ -1,8 +1,8 @@
 package io.github.lucasifce.gamification.domain.service.implementation;
 
-import io.github.lucasifce.gamification.api.dto.AlunoTurmaInsertListDTO;
-import io.github.lucasifce.gamification.api.dto.ProfessorTurmaInsertListDTO;
-import io.github.lucasifce.gamification.api.dto.TurmaDTO;
+import io.github.lucasifce.gamification.api.dto.matriculaTurma.AlunoTurmaInsertListDTO;
+import io.github.lucasifce.gamification.api.dto.professor.ProfessorTurmaInsertListDTO;
+import io.github.lucasifce.gamification.api.dto.turma.TurmaDTO;
 import io.github.lucasifce.gamification.domain.enums.StatusTurma;
 import io.github.lucasifce.gamification.domain.exception.NegocioListException;
 import io.github.lucasifce.gamification.domain.model.Aluno;
