@@ -1,10 +1,9 @@
-package io.github.lucasifce.gamification.api.dto;
+package io.github.lucasifce.gamification.api.dto.usuario;
 
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.Column;
-import javax.validation.constraints.NotEmpty;
 
 @Getter
 @Setter

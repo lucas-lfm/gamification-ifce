@@ -1,11 +1,8 @@
 package io.github.lucasifce.gamification.domain.repository;
 
-import io.github.lucasifce.gamification.api.dto.ProfessorDTO;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import io.github.lucasifce.gamification.domain.model.Professor;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
 

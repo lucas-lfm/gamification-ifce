@@ -1,4 +1,4 @@
-package io.github.lucasifce.gamification.api.dto;
+package io.github.lucasifce.gamification.api.dto.matriculaTurma;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;

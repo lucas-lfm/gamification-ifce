@@ -1,4 +1,4 @@
-package io.github.lucasifce.gamification.api.dto;
+package io.github.lucasifce.gamification.api.dto.turma;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.github.lucasifce.gamification.domain.enums.StatusTurma;

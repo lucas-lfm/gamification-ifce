@@ -1,4 +1,4 @@
-package io.github.lucasifce.gamification.api.dto;
+package io.github.lucasifce.gamification.api.dto.aluno;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

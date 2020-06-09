@@ -1,6 +1,6 @@
 package io.github.lucasifce.gamification.domain.service.implementation;
 
-import io.github.lucasifce.gamification.api.dto.AlteraTipoAdminUsuarioDTO;
+import io.github.lucasifce.gamification.api.dto.usuario.AlteraTipoAdminUsuarioDTO;
 import io.github.lucasifce.gamification.domain.exception.NegocioException;
 import io.github.lucasifce.gamification.domain.model.Aluno;
 import io.github.lucasifce.gamification.domain.model.Professor;

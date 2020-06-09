@@ -7,7 +7,12 @@ import java.util.List;
 
 public class NegocioListException extends RuntimeException{
 
-    @Getter
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	
+	@Getter
     @Setter
     private List<String> erros;
 
