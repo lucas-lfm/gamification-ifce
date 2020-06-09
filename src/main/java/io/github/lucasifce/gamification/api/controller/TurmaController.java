@@ -8,9 +8,6 @@ import io.github.lucasifce.gamification.api.dto.professor.ProfessorTurmaInsertLi
 import io.github.lucasifce.gamification.api.dto.ranking.RankingListTurmaDTO;
 import io.github.lucasifce.gamification.api.dto.turma.TurmaDTO;
 import io.github.lucasifce.gamification.domain.service.RankingService;
-
-import io.github.lucasifce.gamification.domain.enums.StatusTurma;
-
 import io.github.lucasifce.gamification.domain.service.TurmaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -29,6 +26,7 @@ public class TurmaController {
     private RankingService rankingService;
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public TurmaDTO saveNewTurma(@RequestBody @Valid TurmaDTO turma){
         return turmaService.saveNewTurma(turma);
     }
