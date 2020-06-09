@@ -33,7 +33,7 @@ public class TurmaDTO {
     private StatusTurma status;
 
     @NotNull
-    @JsonProperty("responsavel_id")
+    @JsonProperty("id_responsavel")
     private Long responsavelId;
 
 
