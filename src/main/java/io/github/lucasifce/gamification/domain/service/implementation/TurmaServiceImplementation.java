@@ -194,7 +194,8 @@ public class TurmaServiceImplementation implements TurmaService {
             if(!StatusTurma.verificarStatus(dto.getStatus())){
                 erros.add("Status inserido não existe.");
             }
-            if(turma.get().getStatus().toString().equalsIgnoreCase(dto.getStatus())) {
+            if(turma.get().getStatus().toString().equalsIgnoreCase(dto.getStatus())
+                && !turma.get().getStatus().toString().equalsIgnoreCase(StatusTurma.FINALIZADO.toString())) {
                 erros.add("Essa turma já encontra-se com o status que deseja alterar.");
             } else {
                 if (turma.get().getStatus().toString().equalsIgnoreCase(StatusTurma.FINALIZADO.toString())) {
@@ -213,9 +214,16 @@ public class TurmaServiceImplementation implements TurmaService {
         if(turma.isEmpty()){
             erros.add("Nenhuma turma encontrada com esse id.");
         } else {
+
             Optional<Professor> professorResponsavel = pesquisarProfessorId(dto.getIdResponsavel());
             Optional<Professor> novoResponsavel = pesquisarProfessorId(dto.getIdNovoResponsavel());
 
+            if(turma.get().getStatus().toString().equalsIgnoreCase(StatusTurma.ARQUIVADO.toString())){
+                erros.add("O status da turma está ARQUIVADO. Por favor, ative a turma para trocar de responsável.");
+            }
+            if(turma.get().getStatus().toString().equalsIgnoreCase(StatusTurma.FINALIZADO.toString())){
+                erros.add("O status da turma está FINALIZADO. Infelizmente você não pode mais trocar de responsável.");
+            }
             if(professorResponsavel.isEmpty()){
                 erros.add("Nenhum professor responsavel encontrado com o id: "+dto.getIdResponsavel());
             } else {
@@ -243,27 +251,34 @@ public class TurmaServiceImplementation implements TurmaService {
 
         if(turma.isEmpty()){
             erros.add("Nenhuma turma encontrada com esse id.");
-        }
-        dto.getListaProfessores().stream()
-            .forEach(idProfessor -> {
-                Optional<Professor> professorRemover = pesquisarProfessorId(idProfessor);
+        } else {
+            if(turma.get().getStatus().toString().equalsIgnoreCase(StatusTurma.ARQUIVADO.toString())){
+                erros.add("O status da turma está ARQUIVADO. Por favor, ative a turma para remover professores.");
+            }
+            if(turma.get().getStatus().toString().equalsIgnoreCase(StatusTurma.FINALIZADO.toString())){
+                erros.add("O status da turma está FINALIZADO. Infelizmente você não pode mais remover professores.");
+            }
+            dto.getListaProfessores().stream()
+                    .forEach(idProfessor -> {
+                        Optional<Professor> professorRemover = pesquisarProfessorId(idProfessor);
 
-                if(professorRemover.isEmpty()){
-                    erros.add("Nenhum professor encontrado com o id: "+idProfessor);
-                } else {
-                    if(!turma.isEmpty()) {
-                        Long professorResponsavel = turma.get().getResponsavelId().getId();
-                        if(professorRemover.get().getId().equals(professorResponsavel)){
-                            erros.add("O professor responsável não pode ser removido. Passe a turma para outro professor para poder ser removido.");
+                        if (professorRemover.isEmpty()) {
+                            erros.add("Nenhum professor encontrado com o id: " + idProfessor);
                         } else {
-                            int possuiProfessor = turmasRepository.verficarProfessorEmTurma(idProfessor, dto.getIdTurma());
-                            if (possuiProfessor == 0) {
-                                erros.add("Esse professor de id: " + idProfessor + " não está inserido na turma.");
+                            if (!turma.isEmpty()) {
+                                Long professorResponsavel = turma.get().getResponsavelId().getId();
+                                if (professorRemover.get().getId().equals(professorResponsavel)) {
+                                    erros.add("O professor responsável não pode ser removido. Passe a turma para outro professor para poder ser removido.");
+                                } else {
+                                    int possuiProfessor = turmasRepository.verficarProfessorEmTurma(idProfessor, dto.getIdTurma());
+                                    if (possuiProfessor == 0) {
+                                        erros.add("Esse professor de id: " + idProfessor + " não está inserido na turma.");
+                                    }
+                                }
                             }
                         }
-                    }
-                }
-            });
+                    });
+        }
         return erros;
     }
 
@@ -275,27 +290,34 @@ public class TurmaServiceImplementation implements TurmaService {
 
         if(turma.isEmpty()){
             erros.add("Nenhuma turma encontrada com esse id.");
-        }
-        if(professorResponsavel.isEmpty()){
-            erros.add("Nenhum professor responsável encontrada com esse id.");
         } else {
-            if(!turma.isEmpty()){
-                if(!turma.get().getResponsavelId().getId().equals(professorResponsavel.get().getId())){
-                    erros.add("Apenas o professor responsável podem inserir professores.");
-                } else {
-                    dto.getListaProfessores().stream()
-                        .forEach(idProfessor -> {
-                            Optional<Professor> professorCadastro = pesquisarProfessorId(idProfessor);
+            if(turma.get().getStatus().toString().equalsIgnoreCase(StatusTurma.ARQUIVADO.toString())){
+                erros.add("O status da turma está ARQUIVADO. Por favor, ative a turma para inserir novos professores.");
+            }
+            if(turma.get().getStatus().toString().equalsIgnoreCase(StatusTurma.FINALIZADO.toString())){
+                erros.add("O status da turma está FINALIZADO. Infelizmente você não pode inserir novos professores.");
+            }
+            if (professorResponsavel.isEmpty()) {
+                erros.add("Nenhum professor responsável encontrada com esse id.");
+            } else {
+                if (!turma.isEmpty()) {
+                    if (!turma.get().getResponsavelId().getId().equals(professorResponsavel.get().getId())) {
+                        erros.add("Apenas o professor responsável podem inserir professores.");
+                    } else {
+                        dto.getListaProfessores().stream()
+                                .forEach(idProfessor -> {
+                                    Optional<Professor> professorCadastro = pesquisarProfessorId(idProfessor);
 
-                            if(professorCadastro.isEmpty()){
-                                erros.add("Nenhum professor encontrado com o id: "+idProfessor);
-                            } else {
-                                int possuiProfessor = turmasRepository.verficarProfessorEmTurma(idProfessor, dto.getIdTurma());
-                                if (possuiProfessor > 0) {
-                                    erros.add("Esse professor de id: " + idProfessor + " já está inserido na turma.");
-                                }
-                            }
-                        });
+                                    if (professorCadastro.isEmpty()) {
+                                        erros.add("Nenhum professor encontrado com o id: " + idProfessor);
+                                    } else {
+                                        int possuiProfessor = turmasRepository.verficarProfessorEmTurma(idProfessor, dto.getIdTurma());
+                                        if (possuiProfessor > 0) {
+                                            erros.add("Esse professor de id: " + idProfessor + " já está inserido na turma.");
+                                        }
+                                    }
+                                });
+                    }
                 }
             }
         }
@@ -303,45 +325,54 @@ public class TurmaServiceImplementation implements TurmaService {
     }
 
     /*metodo para validar turma e aluno(s)*/
-    private List<String> validarCamposParaAluno(Long idTurma, Long idProfessor, List<Long> idAlunos, boolean isNewProfessor){
+    private List<String> validarCamposParaAluno(Long idTurma, Long idProfessor, List<Long> idAlunos, boolean isNewAluno){
         List<String> erros = new ArrayList<String>();
+        String tipoCadastro = isNewAluno ? "inserir" : "remover";
+
         Optional<Turma> turma = pesquisarTurmaId(idTurma);
         Optional<Professor> professor = pesquisarProfessorId(idProfessor);
 
         if(turma.isEmpty()){
             erros.add("Nenhuma turma encontrada com esse id.");
-        }
-        if(professor.isEmpty()){
-            erros.add("Nenhuma professor encontrado com o id: "+idProfessor);
         } else {
-            int professorCadastrado = turmasRepository.verficarProfessorEmTurma(idProfessor, idTurma);
-
-            if(professorCadastrado == 0){
-                if(isNewProfessor) {
-                    erros.add("Esse professor não pode inserir alunos, ele não está cadastro na turma.");
-                } else {
-                    erros.add("Esse professor não pode remover alunos, ele não está cadastro na turma.");
-                }
+            if(turma.get().getStatus().toString().equalsIgnoreCase(StatusTurma.ARQUIVADO.toString())){
+                erros.add("O status da turma está ARQUIVADO. Por favor, ative a turma para "+tipoCadastro+" novos Alunos.");
             }
-            idAlunos.forEach(idAluno -> {
-                Optional<Aluno> alunoCadastro = pesquisarAlunoId(idAluno);
+            if(turma.get().getStatus().toString().equalsIgnoreCase(StatusTurma.FINALIZADO.toString())){
+                erros.add("O status da turma está FINALIZADO. Infelizmente você não pode mais "+tipoCadastro+" Alunos.");
+            }
+            if (professor.isEmpty()) {
+                erros.add("Nenhuma professor encontrado com o id: " + idProfessor);
+            } else {
+                int professorCadastrado = turmasRepository.verficarProfessorEmTurma(idProfessor, idTurma);
 
-                if (alunoCadastro.isEmpty()) {
-                    erros.add("Nenhuma aluno encontrado com o id: " + idAluno);
-                } else {
-                    if(isNewProfessor) {
-                        int alunoInserido = turmasRepository.verficarAlunoEmTurma(idAluno, idTurma);
-                        if (alunoInserido == 1) {
-                            erros.add("Esse aluno de id: " + idAluno + " já está inserido na turma.");
-                        }
+                if (professorCadastrado == 0) {
+                    if (isNewAluno) {
+                        erros.add("Esse professor não pode inserir alunos, ele não está cadastro na turma.");
                     } else {
-                        int alunoInserido = turmasRepository.verficarAlunoEmTurma(idAluno, idTurma);
-                        if (alunoInserido == 0) {
-                            erros.add("Esse aluno de id: " + idAluno + " não está inserido na turma.");
-                        }
+                        erros.add("Esse professor não pode remover alunos, ele não está cadastro na turma.");
                     }
                 }
-            });
+                idAlunos.forEach(idAluno -> {
+                    Optional<Aluno> alunoCadastro = pesquisarAlunoId(idAluno);
+
+                    if (alunoCadastro.isEmpty()) {
+                        erros.add("Nenhuma aluno encontrado com o id: " + idAluno);
+                    } else {
+                        if (isNewAluno) {
+                            int alunoInserido = turmasRepository.verficarAlunoEmTurma(idAluno, idTurma);
+                            if (alunoInserido == 1) {
+                                erros.add("Esse aluno de id: " + idAluno + " já está inserido na turma.");
+                            }
+                        } else {
+                            int alunoInserido = turmasRepository.verficarAlunoEmTurma(idAluno, idTurma);
+                            if (alunoInserido == 0) {
+                                erros.add("Esse aluno de id: " + idAluno + " não está inserido na turma.");
+                            }
+                        }
+                    }
+                });
+            }
         }
         return erros;
     }
