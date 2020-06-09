@@ -1,6 +1,5 @@
-package io.github.lucasifce.gamification.api.dto;
+package io.github.lucasifce.gamification.api.dto.professor;
 
-import io.github.lucasifce.gamification.domain.model.Usuario;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,15 +8,12 @@ import lombok.NoArgsConstructor;
 import javax.validation.constraints.NotNull;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @Builder
-public class AlunoUsuarioDTO {
+public class ProfessorDTO {
 
     private Long id;
-
-    @NotNull
-    private Long matricula;
 
     @NotNull
     private String nome;
@@ -26,8 +22,5 @@ public class AlunoUsuarioDTO {
     private String email;
 
     private String telefone;
-
-    @NotNull
-    private Usuario usuario;
 
 }

@@ -1,9 +1,13 @@
 package io.github.lucasifce.gamification.api.controller;
 
-import io.github.lucasifce.gamification.api.dto.AlunoDTO;
-import io.github.lucasifce.gamification.api.dto.AlunoUsuarioDTO;
+import io.github.lucasifce.gamification.api.dto.aluno.AlunoDTO;
+import io.github.lucasifce.gamification.api.dto.aluno.AlunoUsuarioDTO;
+import io.github.lucasifce.gamification.api.dto.matriculaTurma.MatriculaTurmaDTO;
+import io.github.lucasifce.gamification.api.dto.ranking.RankingListAlunoDTO;
 import io.github.lucasifce.gamification.domain.model.Aluno;
 import io.github.lucasifce.gamification.domain.service.AlunoService;
+import io.github.lucasifce.gamification.domain.service.RankingService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +21,9 @@ public class AlunoController {
 
 	@Autowired
 	private AlunoService alunoService;
+	
+	@Autowired
+	private RankingService rankingService;
 	
 	@GetMapping
     public List<Aluno> findAluno(Aluno filtro){
@@ -54,7 +61,18 @@ public class AlunoController {
 	public void delete(@PathVariable("id") Long id) {
 		alunoService.deleteAluno(id);
 	}
+	
+	/* Retorna uma lista de pontuações e posições por turma para um aluno específico */
+	@GetMapping("/ranking/{idAluno}")
+    public RankingListAlunoDTO buscarRanking(@PathVariable("idAluno") Long idAluno) {
+    	return rankingService.buscarRankingPorAluno(idAluno);
+    }
 
+	@GetMapping("/pontuacao/{turmaId}/{alunoId}")
+    public MatriculaTurmaDTO getPontuacao(@PathVariable Long turmaId, @PathVariable Long alunoId){
+		return alunoService.getPontuacaoPorTurma(turmaId, alunoId);
+	}
+	
 	/*@GetMapping("/buscar-matricula/{matricula}")
 	public ResponseEntity<Aluno> buscarPorMatricula(@PathVariable("matricula") Long matricula){
 		

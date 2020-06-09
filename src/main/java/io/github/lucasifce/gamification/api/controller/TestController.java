@@ -19,14 +19,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import io.github.lucasifce.gamification.api.dto.MatriculaTurmaInsertDTO;
+import io.github.lucasifce.gamification.api.dto.matriculaTurma.MatriculaTurmaDTO;
 import io.github.lucasifce.gamification.domain.exception.EntidadeNaoEncontradaException;
 import io.github.lucasifce.gamification.domain.exception.NegocioException;
 import io.github.lucasifce.gamification.domain.model.Aluno;
 import io.github.lucasifce.gamification.domain.model.MatriculaTurma;
+import io.github.lucasifce.gamification.domain.model.Ranking;
 import io.github.lucasifce.gamification.domain.model.Turma;
 import io.github.lucasifce.gamification.domain.repository.AlunosRepository;
 import io.github.lucasifce.gamification.domain.repository.MatriculasTurmaRepository;
+import io.github.lucasifce.gamification.domain.repository.RankingsRepository;
 import io.github.lucasifce.gamification.domain.repository.TurmasRepository;
 
 @RestController
@@ -41,6 +43,9 @@ public class TestController {
 	
 	@Autowired
 	private AlunosRepository alunosRepository;
+	
+	@Autowired
+	private RankingsRepository rankingsRepository;
 	
 	@GetMapping
     //@ResponseStatus(HttpStatus.OK) - ja retorna por padrao o status OK se der certo
@@ -89,7 +94,7 @@ public class TestController {
 	@PostMapping("/turmas/inserir-aluno")
 	@ResponseStatus(HttpStatus.CREATED)
     @Transactional
-	public MatriculaTurma insertAluno(@RequestBody @Valid MatriculaTurmaInsertDTO matriculaTurmaDTO) {
+	public MatriculaTurma insertAluno(@RequestBody @Valid MatriculaTurmaDTO matriculaTurmaDTO) {
 		
 		Aluno aluno = alunosRepository.findById(matriculaTurmaDTO.getAlunoId())
 				.orElseThrow(() -> new EntidadeNaoEncontradaException("Aluno não encontrado!"));
@@ -110,7 +115,7 @@ public class TestController {
 	@ResponseStatus(HttpStatus.NO_CONTENT)
     @Transactional
     //Falta implementar regra de negócio para verificar se um aluno já está inserido na turma
-	public void insertAlunos(@RequestBody @Valid List<MatriculaTurmaInsertDTO> matriculasTurmaDTO) {
+	public void insertAlunos(@RequestBody @Valid List<MatriculaTurmaDTO> matriculasTurmaDTO) {
 		
 		matriculasTurmaDTO.forEach( matriculaTurmaDTO -> {
 			Aluno aluno = alunosRepository.findById(matriculaTurmaDTO.getAlunoId())
@@ -129,6 +134,14 @@ public class TestController {
 		
 	}
 	
+	@GetMapping("/ranking/{idTurma}")
+	public List<Ranking> buscarRankingPorTurma(@PathVariable Long idTurma){
+		return rankingsRepository.buscarPorTurma(idTurma);
+	}
 	
+	@GetMapping("/ranking/{idTurma}/{idAluno}")
+	public List<Ranking> buscarRankingPorTurmaEAluno(@PathVariable Long idTurma, @PathVariable Long idAluno){
+		return rankingsRepository.buscarPorTurmaEAluno(idTurma, idAluno);
+	}
 	
 }

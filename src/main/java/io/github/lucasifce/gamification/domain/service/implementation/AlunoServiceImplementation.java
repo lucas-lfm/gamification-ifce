@@ -1,12 +1,16 @@
 package io.github.lucasifce.gamification.domain.service.implementation;
 
-import io.github.lucasifce.gamification.api.dto.AlunoDTO;
-import io.github.lucasifce.gamification.api.dto.AlunoUsuarioDTO;
+import io.github.lucasifce.gamification.api.dto.aluno.AlunoDTO;
+import io.github.lucasifce.gamification.api.dto.aluno.AlunoUsuarioDTO;
+import io.github.lucasifce.gamification.api.dto.matriculaTurma.MatriculaTurmaDTO;
 import io.github.lucasifce.gamification.domain.exception.EntidadeNaoEncontradaException;
+import io.github.lucasifce.gamification.domain.exception.NegocioException;
 import io.github.lucasifce.gamification.domain.exception.NegocioListException;
 import io.github.lucasifce.gamification.domain.model.Aluno;
+import io.github.lucasifce.gamification.domain.model.MatriculaTurma;
 import io.github.lucasifce.gamification.domain.model.Usuario;
 import io.github.lucasifce.gamification.domain.repository.AlunosRepository;
+import io.github.lucasifce.gamification.domain.repository.MatriculasTurmaRepository;
 import io.github.lucasifce.gamification.domain.repository.UsuariosRepository;
 import io.github.lucasifce.gamification.domain.service.AlunoService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +32,9 @@ public class AlunoServiceImplementation implements AlunoService {
 
     @Autowired
     private UsuariosRepository usuariosRepository;
+    
+    @Autowired
+    MatriculasTurmaRepository matriculasTurmaRepository;
 
     @Override
     public List<AlunoDTO> findAlunoDTO(Aluno filtro) {
@@ -98,6 +105,22 @@ public class AlunoServiceImplementation implements AlunoService {
                     usuariosRepository.deleteById(alunoExistente.getUsuario().getId());
                     return alunoExistente;
                 }).orElseThrow(() -> new EntidadeNaoEncontradaException("Aluno não encontrado."));
+    }
+    
+    /* Método para buscar pontuação do aluno por turma */
+    @Override
+    public MatriculaTurmaDTO getPontuacaoPorTurma(Long turmaId, Long alunoId){
+		
+		Optional<MatriculaTurma> matricula = matriculasTurmaRepository.buscarPorTurmaEAluno(alunoId, turmaId);
+		
+		return matricula.map( matriculaEncontrada -> {
+			MatriculaTurmaDTO matriculaDTO = MatriculaTurmaDTO.builder()
+				.alunoId(matriculaEncontrada.getAluno().getId())
+				.turmaId(matriculaEncontrada.getTurma().getId())
+				.pontuacao(matriculaEncontrada.getPontuacao()).build();
+			return matriculaDTO;
+		}).orElseThrow(() -> new NegocioException("Registro não encontrado!"));
+		
     }
 
     /*metodo para validar campos para salvar*/
