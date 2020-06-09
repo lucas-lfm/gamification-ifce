@@ -9,7 +9,7 @@ import java.util.List;
 
 @Data
 @Builder
-public class ProfessorTurmaInsertListDTO {
+public class TrocaResponsavelTurmaDTO {
 
     @NotNull
     @JsonProperty("id_turma")
@@ -20,7 +20,7 @@ public class ProfessorTurmaInsertListDTO {
     private Long idResponsavel;
 
     @NotNull
-    @JsonProperty("lista_professores")
-    private List<Long> listaProfessores;
+    @JsonProperty("id_novo_responsavel")
+    private Long idNovoResponsavel;
 
 }

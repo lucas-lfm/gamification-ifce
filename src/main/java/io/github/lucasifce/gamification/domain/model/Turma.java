@@ -8,6 +8,7 @@ import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import io.github.lucasifce.gamification.domain.enums.StatusTurma;
 import lombok.*;
 
 @Data
@@ -32,11 +33,15 @@ public class Turma {
 	@Column(name = "periodo", length = 45, nullable = false)
 	private String periodo;
 
+	@Enumerated(EnumType.STRING)
+	@Column(name = "status")
+	private StatusTurma status;
+
 	@JsonIgnoreProperties("turmas")
 	@NotNull
 	@ManyToOne
-	@JoinColumn(name = "criador_id")
-	private Professor criadorTurma;
+	@JoinColumn(name = "responsavel_id")
+	private Professor responsavelId;
 
 	@JsonIgnoreProperties("turmas")
 	@ManyToMany
