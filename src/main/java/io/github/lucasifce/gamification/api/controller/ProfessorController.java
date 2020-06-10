@@ -1,6 +1,7 @@
 package io.github.lucasifce.gamification.api.controller;
 
 import io.github.lucasifce.gamification.api.dto.professor.ProfessorDTO;
+import io.github.lucasifce.gamification.domain.exception.ListaVaziaException;
 import io.github.lucasifce.gamification.domain.model.Professor;
 import io.github.lucasifce.gamification.domain.service.ProfessorService;
 import org.springframework.beans.factory.annotation.Autowired;

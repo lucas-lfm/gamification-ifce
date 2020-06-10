@@ -1,6 +1,7 @@
 package io.github.lucasifce.gamification.api.exceptionhandler;
 
 import io.github.lucasifce.gamification.domain.exception.EntidadeNaoEncontradaException;
+import io.github.lucasifce.gamification.domain.exception.ListaVaziaException;
 import io.github.lucasifce.gamification.domain.exception.NegocioException;
 import io.github.lucasifce.gamification.domain.exception.NegocioListException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,9 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 @ControllerAdvice
 public class ApiExceptionHandler extends ResponseEntityExceptionHandler{
@@ -50,6 +54,12 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler{
 		
 		return handleExceptionInternal(ex, problema, new HttpHeaders(), status, request);
 		
+	}
+
+	@ExceptionHandler(ListaVaziaException.class)
+	public ResponseEntity<Object> handlerListaVazia(ListaVaziaException ex, WebRequest request) {
+		var status = HttpStatus.NO_CONTENT;
+		return handleExceptionInternal(ex, null, new HttpHeaders(), status, request);
 	}
 
 	@ExceptionHandler(NegocioListException.class)

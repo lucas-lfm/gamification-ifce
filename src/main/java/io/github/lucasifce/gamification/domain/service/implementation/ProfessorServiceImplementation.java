@@ -2,6 +2,7 @@ package io.github.lucasifce.gamification.domain.service.implementation;
 
 import io.github.lucasifce.gamification.api.dto.professor.ProfessorDTO;
 import io.github.lucasifce.gamification.domain.exception.EntidadeNaoEncontradaException;
+import io.github.lucasifce.gamification.domain.exception.ListaVaziaException;
 import io.github.lucasifce.gamification.domain.exception.NegocioListException;
 import io.github.lucasifce.gamification.domain.model.Professor;
 import io.github.lucasifce.gamification.domain.model.Usuario;
@@ -34,18 +35,27 @@ public class ProfessorServiceImplementation implements ProfessorService {
         Example example = filtroPesquisa(filtro);
 
         List<Professor> professores = professoresRepository.findAll(example);
-        return professores.stream()
+        List<ProfessorDTO> profs = professores.stream()
                 .map(professor -> {
                     return converterProfessor(professor);
                 }).collect(Collectors.toList());
+
+        if(profs.isEmpty()){
+            throw new ListaVaziaException();
+        }
+        return profs;
     }
 
     @Override
     public List<Professor> findProfessor(Professor filtro){
         Example example = filtroPesquisa(filtro);
 
-        //List<Professor> professores = professoresRepository.findAll(example);
-        return professoresRepository.findAll(example);
+        List<Professor> professores = professoresRepository.findAll(example);
+
+        if(professores.isEmpty()){
+            throw new ListaVaziaException();
+        }
+        return professores;
     }
 
     @Override
