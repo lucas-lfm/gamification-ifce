@@ -1,6 +1,7 @@
 package io.github.lucasifce.gamification.api.controller;
 
 import io.github.lucasifce.gamification.api.dto.professor.ProfessorDTO;
+import io.github.lucasifce.gamification.api.dto.professor.ProfessorFindDTO;
 import io.github.lucasifce.gamification.domain.exception.ListaVaziaException;
 import io.github.lucasifce.gamification.domain.model.Professor;
 import io.github.lucasifce.gamification.domain.service.ProfessorService;
@@ -26,7 +27,7 @@ public class ProfessorController {
     }
 
     @GetMapping
-    public List<Professor> findProfessor(Professor filtro){
+    public List<ProfessorFindDTO> findProfessor(Professor filtro){
         return professorService.findProfessor(filtro);
     }
 

@@ -1,10 +1,13 @@
 package io.github.lucasifce.gamification.domain.service.implementation;
 
 import io.github.lucasifce.gamification.api.dto.professor.ProfessorDTO;
+import io.github.lucasifce.gamification.api.dto.professor.ProfessorFindDTO;
+import io.github.lucasifce.gamification.api.dto.turma.TurmaDTO;
 import io.github.lucasifce.gamification.domain.exception.EntidadeNaoEncontradaException;
 import io.github.lucasifce.gamification.domain.exception.ListaVaziaException;
 import io.github.lucasifce.gamification.domain.exception.NegocioListException;
 import io.github.lucasifce.gamification.domain.model.Professor;
+import io.github.lucasifce.gamification.domain.model.Turma;
 import io.github.lucasifce.gamification.domain.model.Usuario;
 import io.github.lucasifce.gamification.domain.repository.ProfessoresRepository;
 import io.github.lucasifce.gamification.domain.repository.UsuariosRepository;
@@ -47,15 +50,22 @@ public class ProfessorServiceImplementation implements ProfessorService {
     }
 
     @Override
-    public List<Professor> findProfessor(Professor filtro){
+    public List<ProfessorFindDTO> findProfessor(Professor filtro){
         Example example = filtroPesquisa(filtro);
 
         List<Professor> professores = professoresRepository.findAll(example);
 
-        if(professores.isEmpty()){
+        if(!professores.isEmpty()){
+            List<ProfessorFindDTO> professoresDTO = new ArrayList<>();
+            professores.stream()
+                    .map(professor -> {
+                        return professoresDTO.add(converterProfessorFindDTO(professor));
+                    }).collect(Collectors.toList());
+            return professoresDTO;
+        } else {
             throw new ListaVaziaException();
         }
-        return professores;
+
     }
 
     @Override
@@ -152,7 +162,7 @@ public class ProfessorServiceImplementation implements ProfessorService {
         return professor.isPresent() ? professor.get() : null;
     }
 
-    /*Server para converter Professor para DTO*/
+    /*Serve para converter Professor para DTO*/
     private ProfessorDTO converterProfessor(Professor professor){
         return ProfessorDTO
                 .builder()
@@ -160,6 +170,36 @@ public class ProfessorServiceImplementation implements ProfessorService {
                 .nome(professor.getNome())
                 .email(professor.getEmail())
                 .telefone(professor.getTelefone())
+                .build();
+    }
+
+    /*serve para converte professor para professorFindDTO*/
+    private ProfessorFindDTO converterProfessorFindDTO(Professor professor) {
+        List<TurmaDTO> turmas = new ArrayList<>();
+        professor.getTurmas().stream()
+                .map(turma -> {
+                    return turmas.add(conveterTurmaDTO(turma));
+                }).collect(Collectors.toList());
+
+        return ProfessorFindDTO
+                .builder()
+                .id(professor.getId())
+                .nome(professor.getNome())
+                .email(professor.getEmail())
+                .telefone(professor.getTelefone())
+                .turmas(turmas)
+                .build();
+    }
+
+    /*serve para converte turma para turmaDTO*/
+    private TurmaDTO conveterTurmaDTO(Turma turma) {
+        return TurmaDTO
+                .builder()
+                .id(turma.getId())
+                .codigo(turma.getCodigo())
+                .periodo(turma.getPeriodo())
+                .status(turma.getStatus())
+                .responsavelId(turma.getResponsavelId().getId())
                 .build();
     }
 
