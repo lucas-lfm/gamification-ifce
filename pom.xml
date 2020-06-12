@@ -3,6 +3,13 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	
+	<groupId>io.github.lucasifce.gamification</groupId>
+	<artifactId>gamification-ifce</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>gamification-ifce</name>
+	<description>API para Sistema de Gamificação</description>
+	<packaging>${project.packaging}</packaging>
+	
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
@@ -10,12 +17,26 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	
-	<groupId>io.github.lucasifce.gamification</groupId>
-	<artifactId>gamification-ifce</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<name>gamification-ifce</name>
-	<description>API para Sistema de Gamificação</description>
-	<packaging>war</packaging>
+	<profiles>
+		<profile>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<id>desenvolvimento</id>
+			<properties>
+				<project.packaging>jar</project.packaging>
+				<tomcat.scope>compile</tomcat.scope>
+			</properties>
+		</profile>
+		
+		<profile>
+			<id>producao</id>
+			<properties>
+				<project.packaging>war</project.packaging>
+				<tomcat.scope>provided</tomcat.scope>
+			</properties>
+		</profile>
+	</profiles>
 
 	<properties>
 		<java.version>11</java.version>
@@ -41,7 +62,7 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-tomcat</artifactId>
-			<scope>provided</scope>
+			<scope>${tomcat.scope}</scope>
 		</dependency>
 		
 		<dependency>
