@@ -5,6 +5,7 @@ import io.github.lucasifce.gamification.api.dto.aluno.AlunoTurmasDTO;
 import io.github.lucasifce.gamification.api.dto.aluno.AlunoUsuarioDTO;
 import io.github.lucasifce.gamification.api.dto.matriculaTurma.MatriculaTurmaDTO;
 import io.github.lucasifce.gamification.domain.exception.EntidadeNaoEncontradaException;
+import io.github.lucasifce.gamification.domain.exception.ListaVaziaException;
 import io.github.lucasifce.gamification.domain.exception.NegocioException;
 import io.github.lucasifce.gamification.domain.exception.NegocioListException;
 import io.github.lucasifce.gamification.domain.model.Aluno;
@@ -41,10 +42,15 @@ public class AlunoServiceImplementation implements AlunoService {
     public List<AlunoTurmasDTO> findAlunoTurmas(Aluno filtro) {
         Example example = filtroPesquisa(filtro);
         List<Aluno> alunos = alunosRepository.findAll(example);
-        return alunos.stream()
+        List<AlunoTurmasDTO> alns = alunos.stream()
                 .map(aluno -> {
                     return converterAlunoTurmas(aluno);
                 }).collect(Collectors.toList());
+
+        if(alns.isEmpty()){
+            throw new ListaVaziaException();
+        }
+        return alns;
     }
 
     @Override
@@ -67,6 +73,10 @@ public class AlunoServiceImplementation implements AlunoService {
     public List<AlunoDTO> findAluno(Aluno filtro) {
         Example example = filtroPesquisa(filtro);
         List<Aluno> alunos = alunosRepository.findAll(example);
+        if(alunos.isEmpty()){
+            throw new ListaVaziaException();
+        }
+        
         return alunos.stream()
                 .map(aluno -> {
                     return converterAluno(aluno);
