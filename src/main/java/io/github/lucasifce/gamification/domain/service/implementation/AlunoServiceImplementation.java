@@ -1,6 +1,7 @@
 package io.github.lucasifce.gamification.domain.service.implementation;
 
 import io.github.lucasifce.gamification.api.dto.aluno.AlunoDTO;
+import io.github.lucasifce.gamification.api.dto.aluno.AlunoTurmasDTO;
 import io.github.lucasifce.gamification.api.dto.aluno.AlunoUsuarioDTO;
 import io.github.lucasifce.gamification.api.dto.matriculaTurma.MatriculaTurmaDTO;
 import io.github.lucasifce.gamification.domain.exception.EntidadeNaoEncontradaException;
@@ -37,7 +38,33 @@ public class AlunoServiceImplementation implements AlunoService {
     MatriculasTurmaRepository matriculasTurmaRepository;
 
     @Override
-    public List<AlunoDTO> findAlunoDTO(Aluno filtro) {
+    public List<AlunoTurmasDTO> findAlunoTurmas(Aluno filtro) {
+        Example example = filtroPesquisa(filtro);
+        List<Aluno> alunos = alunosRepository.findAll(example);
+        return alunos.stream()
+                .map(aluno -> {
+                    return converterAlunoTurmas(aluno);
+                }).collect(Collectors.toList());
+    }
+
+    @Override
+	public AlunoUsuarioDTO getAlunoPorId(Long id) {
+    	Aluno aluno = alunosRepository.findById(id)
+        	.orElseThrow(() -> new EntidadeNaoEncontradaException("Aluno não encontrado."));
+    	
+    	return AlunoUsuarioDTO.builder()
+    		.id(aluno.getId())
+    		.matricula(aluno.getMatricula())
+    		.nome(aluno.getNome())
+    		.email(aluno.getEmail())
+    		.telefone(aluno.getTelefone())
+    		.usuario(aluno.getUsuario())
+    		.build();
+    	
+	}
+
+	@Override
+    public List<AlunoDTO> findAluno(Aluno filtro) {
         Example example = filtroPesquisa(filtro);
         List<Aluno> alunos = alunosRepository.findAll(example);
         return alunos.stream()
@@ -47,22 +74,19 @@ public class AlunoServiceImplementation implements AlunoService {
     }
 
     @Override
-    public List<Aluno> findAluno(Aluno filtro) {
-        Example example = filtroPesquisa(filtro);
-        return alunosRepository.findAll(example);
-    }
-
-    @Override
-    public AlunoDTO getAlunoByMatriculaDTO(Long matricula) {
+    public AlunoDTO getAlunoByMatricula(Long matricula) {
         return converterAluno(alunosRepository.findByMatricula(matricula)
                .orElseThrow(() -> new EntidadeNaoEncontradaException("Aluno não encontrado.")));/*ver com o lucas se não é melhor colocar o no content*/
 
     }
 
     @Override
-    public Aluno getAlunoByMatricula(Long matricula) {
-        return alunosRepository.findByMatricula(matricula)
+    public AlunoTurmasDTO getAlunoTurmasByMatricula(Long matricula) {
+        Aluno aluno = alunosRepository.findByMatricula(matricula)
                .orElseThrow(() -> new EntidadeNaoEncontradaException("Aluno não encontrado."));
+        
+        return converterAlunoTurmas(aluno);
+        
     }
 
     @Override
@@ -114,13 +138,38 @@ public class AlunoServiceImplementation implements AlunoService {
 		Optional<MatriculaTurma> matricula = matriculasTurmaRepository.buscarPorTurmaEAluno(alunoId, turmaId);
 		
 		return matricula.map( matriculaEncontrada -> {
-			MatriculaTurmaDTO matriculaDTO = MatriculaTurmaDTO.builder()
-				.alunoId(matriculaEncontrada.getAluno().getId())
-				.turmaId(matriculaEncontrada.getTurma().getId())
-				.pontuacao(matriculaEncontrada.getPontuacao()).build();
-			return matriculaDTO;
+			return converterMatriculaTurmaDTO(matriculaEncontrada);
 		}).orElseThrow(() -> new NegocioException("Registro não encontrado!"));
 		
+    }
+    
+    /* Método para converter Aluno em AlunoTurmasDTO */
+    private AlunoTurmasDTO converterAlunoTurmas(Aluno aluno) {
+    	
+    	List<MatriculaTurmaDTO> matriculasDTO = new ArrayList<>();
+    	
+    	matriculasDTO = aluno.getMatriculas().stream()
+    		.map(matricula -> {
+    			return converterMatriculaTurmaDTO(matricula);
+    		}).collect(Collectors.toList());
+    	
+		return AlunoTurmasDTO.builder()
+				.id(aluno.getId())
+				.matricula(aluno.getMatricula())
+				.nome(aluno.getNome())
+				.email(aluno.getEmail())
+				.telefone(aluno.getTelefone())
+				.matriculas(matriculasDTO)
+				.build();
+	}
+    
+    private MatriculaTurmaDTO converterMatriculaTurmaDTO(MatriculaTurma matricula) {
+    	return MatriculaTurmaDTO.builder()
+				.idAluno(matricula.getAluno().getId())
+				.codigoTurma(matricula.getTurma().getCodigo())
+				.periodo(matricula.getTurma().getPeriodo())
+				.pontuacao(matricula.getPontuacao())
+				.build();
     }
 
     /*metodo para validar campos para salvar*/
