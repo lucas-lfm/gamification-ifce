@@ -32,9 +32,9 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler{
 	
 	@ExceptionHandler(EntidadeNaoEncontradaException.class)
 	public ResponseEntity<Object> handlerNegocio(EntidadeNaoEncontradaException ex, WebRequest request){
-		var status = HttpStatus.NOT_FOUND;
+		HttpStatus status = HttpStatus.NOT_FOUND;
 		
-		var problema = new Problema();
+		Problema problema = new Problema();
 		problema.setStatus(status.value());
 		problema.setTitulo(ex.getMessage());
 		problema.setDataHora(OffsetDateTime.now());
@@ -45,9 +45,9 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler{
 	
 	@ExceptionHandler(NegocioException.class)
 	public ResponseEntity<Object> handlerNegocio(NegocioException ex, WebRequest request) {
-		var status = HttpStatus.BAD_REQUEST;
+		HttpStatus status = HttpStatus.BAD_REQUEST;
 		
-		var problema = new Problema();
+		Problema problema = new Problema();
 		problema.setStatus(status.value());
 		problema.setTitulo(ex.getMessage());
 		problema.setDataHora(OffsetDateTime.now());
@@ -58,14 +58,14 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler{
 
 	@ExceptionHandler(ListaVaziaException.class)
 	public ResponseEntity<Object> handlerListaVazia(ListaVaziaException ex, WebRequest request) {
-		var status = HttpStatus.NO_CONTENT;
+		HttpStatus status = HttpStatus.NO_CONTENT;
 		return handleExceptionInternal(ex, null, new HttpHeaders(), status, request);
 	}
 
 	@ExceptionHandler(NegocioListException.class)
 	public ResponseEntity<Object> handlerListaNegocio(NegocioListException ex, WebRequest request) {
-		var status = HttpStatus.BAD_REQUEST;
-		var problemas = new Problema();
+		HttpStatus status = HttpStatus.BAD_REQUEST;
+		Problema problemas = new Problema();
 
 		problemas.setStatus(status.value());
 		problemas.setTitulo(ex.getMessage());
@@ -80,7 +80,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler{
 	protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
 			HttpHeaders headers, HttpStatus status, WebRequest request) {
 		
-		var campos = new ArrayList<Problema.Campo>();
+		List<Problema.Campo> campos = new ArrayList<Problema.Campo>();
 		
 		for (ObjectError error : ex.getBindingResult().getAllErrors()) {
 			String nome = ((FieldError) error).getField();
@@ -89,7 +89,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler{
 			campos.add(new Problema.Campo(nome,mensagem));
 		}
 		
-		var problema = new Problema();
+		Problema problema = new Problema();
 		problema.setStatus(status.value());
 		problema.setTitulo("Um ou mais campos estão inválidos. Faça o preenchimento correto e tente novamente!");
 		problema.setDataHora(OffsetDateTime.now());

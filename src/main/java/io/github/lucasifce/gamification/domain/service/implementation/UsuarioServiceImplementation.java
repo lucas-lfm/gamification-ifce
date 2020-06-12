@@ -39,7 +39,7 @@ public class UsuarioServiceImplementation implements UsuarioService {
     @Override
     public Usuario update(Usuario usuario, Long id, Object tipoUsuario){
         Long idUsuario;
-        var idTipoUsuario = buscaIdUsuarioComProfessorOuAluno(tipoUsuario, id);
+        Object idTipoUsuario = buscaIdUsuarioComProfessorOuAluno(tipoUsuario, id);
 
         if(verificarIntanciaObjeto(tipoUsuario).equalsIgnoreCase("aluno")){
             idUsuario = ((Aluno) idTipoUsuario).getUsuario().getId();
