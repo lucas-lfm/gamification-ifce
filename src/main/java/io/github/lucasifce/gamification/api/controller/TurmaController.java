@@ -8,6 +8,8 @@ import io.github.lucasifce.gamification.api.dto.matriculaTurma.AlunoTurmaInsertL
 import io.github.lucasifce.gamification.api.dto.professor.ProfessorTurmaInsertListDTO;
 import io.github.lucasifce.gamification.api.dto.ranking.RankingListTurmaDTO;
 import io.github.lucasifce.gamification.api.dto.turma.TurmaDTO;
+import io.github.lucasifce.gamification.api.dto.turma.TurmaFindDTO;
+import io.github.lucasifce.gamification.domain.model.Turma;
 import io.github.lucasifce.gamification.domain.service.RankingService;
 import io.github.lucasifce.gamification.domain.service.TurmaService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/turmas")
@@ -25,6 +28,16 @@ public class TurmaController {
     
     @Autowired
     private RankingService rankingService;
+
+    @GetMapping
+    public List<TurmaFindDTO> findTurma(Turma filtro){
+        return turmaService.findTurma(filtro);
+    }
+
+    @GetMapping("/{codigoTurma}")
+    public TurmaFindDTO findTurmaByTurma(@PathVariable("codigoTurma") String codigo) {
+        return turmaService.findTurmaByCodigo(codigo);
+    }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
