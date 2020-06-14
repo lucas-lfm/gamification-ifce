@@ -8,6 +8,7 @@ import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.github.lucasifce.gamification.domain.enums.StatusTurma;
 import lombok.*;
 
@@ -41,6 +42,7 @@ public class Turma {
 	@NotNull
 	@ManyToOne
 	@JoinColumn(name = "responsavel_id")
+	@JsonProperty("responsavel")
 	private Professor responsavelId;
 
 	@JsonIgnoreProperties("turmas")

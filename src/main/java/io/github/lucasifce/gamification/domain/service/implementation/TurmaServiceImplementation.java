@@ -1,13 +1,19 @@
 package io.github.lucasifce.gamification.domain.service.implementation;
 
-import io.github.lucasifce.gamification.api.dto.ProfessorTurmaRemoveListDTO;
-import io.github.lucasifce.gamification.api.dto.TrocaResponsavelTurmaDTO;
-import io.github.lucasifce.gamification.api.dto.TrocaStatusTurmaDTO;
+import io.github.lucasifce.gamification.api.dto.aluno.AlunoDTO;
+import io.github.lucasifce.gamification.api.dto.matriculaTurma.AlunoTurmaRemoveListDTO;
+import io.github.lucasifce.gamification.api.dto.professor.ProfessorDTO;
+import io.github.lucasifce.gamification.api.dto.professor.ProfessorTurmaRemoveListDTO;
+import io.github.lucasifce.gamification.api.dto.turma.TrocaResponsavelTurmaDTO;
+import io.github.lucasifce.gamification.api.dto.turma.TrocaStatusTurmaDTO;
 import io.github.lucasifce.gamification.api.dto.matriculaTurma.AlunoTurmaInsertListDTO;
 import io.github.lucasifce.gamification.api.dto.professor.ProfessorTurmaInsertListDTO;
 import io.github.lucasifce.gamification.api.dto.turma.TurmaDTO;
 
+import io.github.lucasifce.gamification.api.dto.turma.TurmaFindDTO;
 import io.github.lucasifce.gamification.domain.enums.StatusTurma;
+import io.github.lucasifce.gamification.domain.exception.EntidadeNaoEncontradaException;
+import io.github.lucasifce.gamification.domain.exception.ListaVaziaException;
 import io.github.lucasifce.gamification.domain.exception.NegocioListException;
 import io.github.lucasifce.gamification.domain.model.Aluno;
 import io.github.lucasifce.gamification.domain.model.MatriculaTurma;
@@ -19,11 +25,14 @@ import io.github.lucasifce.gamification.domain.repository.ProfessoresRepository;
 import io.github.lucasifce.gamification.domain.repository.TurmasRepository;
 import io.github.lucasifce.gamification.domain.service.TurmaService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class TurmaServiceImplementation implements TurmaService {
@@ -39,6 +48,34 @@ public class TurmaServiceImplementation implements TurmaService {
 
     @Autowired
     private MatriculasTurmaRepository matriculasTurmaRepository;
+
+    @Override
+    public List<TurmaFindDTO> findTurma(Turma filtro) {
+        ExampleMatcher exampleMatcher = ExampleMatcher
+                .matching()
+                .withIgnoreCase()
+                .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING);
+        Example example = Example.of(filtro, exampleMatcher);
+
+        List<Turma> turmas = turmasRepository.findAll(example);
+        if(!turmas.isEmpty()) {
+            return turmas.stream().map(turma -> converterTurmaFindDTO(turma))
+                    .collect(Collectors.toList());
+        } else {
+            throw new ListaVaziaException();
+        }
+    }
+
+    @Override
+    public TurmaFindDTO findTurmaByCodigo(String codigo){
+        Optional<Turma> turma = turmasRepository.findByCodigo(codigo);
+
+        if(!turma.isEmpty()) {
+            return converterTurmaFindDTO(turma.get());
+        } else {
+            throw new EntidadeNaoEncontradaException("Turma com esse código não encontrada.");
+        }
+    }
 
     @Override
     @Transactional
@@ -78,13 +115,13 @@ public class TurmaServiceImplementation implements TurmaService {
 
     @Override
     @Transactional
-    public void removeListProfessor(ProfessorTurmaRemoveListDTO dto){
-        List<String> erros = validarCamposParaProfessorRemove(dto);
+    public void removeListProfessor(ProfessorTurmaRemoveListDTO dto, Long idTurma){
+        List<String> erros = validarCamposParaProfessorRemove(dto, idTurma);
 
         if(erros.isEmpty()){
             dto.getListaProfessores().stream()
                 .forEach(idProfessor -> {
-                    turmasRepository.deletarProfessorTurma(idProfessor, dto.getIdTurma());
+                    turmasRepository.deletarProfessorTurma(idProfessor, idTurma);
                 });
         } else {
             throw new NegocioListException(erros, "Validar campos");
@@ -119,8 +156,8 @@ public class TurmaServiceImplementation implements TurmaService {
 
     @Override
     @Transactional
-    public void removeListAluno(AlunoTurmaInsertListDTO dto){
-        List<String> erros = validarCamposParaAluno(dto.getIdTurma(), dto.getIdProfessor(), dto.getListaAlunos(), false);
+    public void removeListAluno(AlunoTurmaRemoveListDTO dto, Long idTurma){
+        List<String> erros = validarCamposParaAluno(idTurma, dto.getIdProfessor(), dto.getListaAlunos(), false);
 
         if(erros.isEmpty()){
             List<MatriculaTurma> matriculaAlunos = new ArrayList<MatriculaTurma>();
@@ -128,7 +165,7 @@ public class TurmaServiceImplementation implements TurmaService {
             dto.getListaAlunos().stream()
                     .forEach(idAluno -> {
                         matriculaAlunos.add(
-                                matriculasTurmaRepository.buscarPorTurmaEAluno(idAluno, dto.getIdTurma()).get()
+                                matriculasTurmaRepository.buscarPorTurmaEAluno(idAluno, idTurma).get()
                         );
                     });
             matriculasTurmaRepository.deleteAll(matriculaAlunos);
@@ -139,11 +176,11 @@ public class TurmaServiceImplementation implements TurmaService {
 
     @Override
     @Transactional
-    public void updateProfessorResponsavel(TrocaResponsavelTurmaDTO dto){
-        List<String> erros = validarCamposTrocaResponsavel(dto);
+    public void updateProfessorResponsavel(TrocaResponsavelTurmaDTO dto, Long idTurma){
+        List<String> erros = validarCamposTrocaResponsavel(dto, idTurma);
 
         if(erros.isEmpty()){
-            turmasRepository.updateProfessorResponsavel(dto.getIdNovoResponsavel(), dto.getIdTurma());
+            turmasRepository.updateProfessorResponsavel(dto.getIdNovoResponsavel(), idTurma);
         } else {
             throw new NegocioListException(erros, "Validar campos");
         }
@@ -213,9 +250,9 @@ public class TurmaServiceImplementation implements TurmaService {
     }
 
     /*metodo para validar troca de responsavel */
-    private List<String> validarCamposTrocaResponsavel(TrocaResponsavelTurmaDTO dto){
+    private List<String> validarCamposTrocaResponsavel(TrocaResponsavelTurmaDTO dto, Long idTurma){
         List<String> erros = new ArrayList<>();
-        Optional<Turma> turma = pesquisarTurmaId(dto.getIdTurma());
+        Optional<Turma> turma = pesquisarTurmaId(idTurma);
 
         if(turma.isEmpty()){
             erros.add("Nenhuma turma encontrada com esse id.");
@@ -240,7 +277,7 @@ public class TurmaServiceImplementation implements TurmaService {
             if(novoResponsavel.isEmpty()){
                 erros.add("Nenhum professor encontrado com o id: "+dto.getIdNovoResponsavel()+ " para o novo professor responsável.");
             } else {
-                int possuiProfessor = turmasRepository.verficarProfessorEmTurma(dto.getIdNovoResponsavel(), dto.getIdTurma());
+                int possuiProfessor = turmasRepository.verficarProfessorEmTurma(dto.getIdNovoResponsavel(), idTurma);
                 if (possuiProfessor == 0) {
                     erros.add("Esse professor de id: " + dto.getIdNovoResponsavel() + " não está inserido na turma. " +
                             "Insira-o primeiro para depois realizar a troca de responsável.");
@@ -251,9 +288,9 @@ public class TurmaServiceImplementation implements TurmaService {
     }
 
     /*metodo para validar turma e professor(es) para remove*/
-    private List<String> validarCamposParaProfessorRemove(ProfessorTurmaRemoveListDTO dto){
+    private List<String> validarCamposParaProfessorRemove(ProfessorTurmaRemoveListDTO dto, Long idTurma){
         List<String> erros = new ArrayList<String>();
-        Optional<Turma> turma = pesquisarTurmaId(dto.getIdTurma());
+        Optional<Turma> turma = pesquisarTurmaId(idTurma);
 
         if(turma.isEmpty()){
             erros.add("Nenhuma turma encontrada com esse id.");
@@ -276,7 +313,7 @@ public class TurmaServiceImplementation implements TurmaService {
                                 if (professorRemover.get().getId().equals(professorResponsavel)) {
                                     erros.add("O professor responsável não pode ser removido. Passe a turma para outro professor para poder ser removido.");
                                 } else {
-                                    int possuiProfessor = turmasRepository.verficarProfessorEmTurma(idProfessor, dto.getIdTurma());
+                                    int possuiProfessor = turmasRepository.verficarProfessorEmTurma(idProfessor, idTurma);
                                     if (possuiProfessor == 0) {
                                         erros.add("Esse professor de id: " + idProfessor + " não está inserido na turma.");
                                     }
@@ -421,4 +458,39 @@ public class TurmaServiceImplementation implements TurmaService {
                 .build();
     }
 
+    /*mapeamento de turma para turmaFindDTO, utilizado para pesquisa por turma*/
+    private TurmaFindDTO converterTurmaFindDTO(Turma turma) {
+        return TurmaFindDTO.builder()
+                .id(turma.getId())
+                .codigo(turma.getCodigo())
+                .periodo(turma.getPeriodo())
+                .status(turma.getStatus())
+                .responsavel(converterProfessorDTO(turma.getResponsavelId()))
+                .alunos(turma.getAlunos().stream()
+                        .map(aluno -> converterAlunoDTO(aluno)).collect(Collectors.toList()))
+                .professores(turma.getProfessores().stream()
+                        .map(professor -> converterProfessorDTO(professor)).collect(Collectors.toList()))
+                .build();
+    }
+
+    /*metodo para mapear professor para professorDTO*/
+    private ProfessorDTO converterProfessorDTO(Professor professor) {
+        return ProfessorDTO.builder()
+                .id(professor.getId())
+                .nome(professor.getNome())
+                .email(professor.getEmail())
+                .telefone(professor.getTelefone())
+                .build();
+    }
+
+    /*metodo para mapear aluno para alunoDTO*/
+    private AlunoDTO converterAlunoDTO(Aluno aluno) {
+        return AlunoDTO.builder()
+                .id(aluno.getId())
+                .matricula(aluno.getMatricula())
+                .nome(aluno.getNome())
+                .email(aluno.getEmail())
+                .telefone(aluno.getTelefone())
+                .build();
+    }
 }
