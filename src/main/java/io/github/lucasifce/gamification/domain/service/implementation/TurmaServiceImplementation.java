@@ -1,6 +1,8 @@
 package io.github.lucasifce.gamification.domain.service.implementation;
 
+import io.github.lucasifce.gamification.api.dto.aluno.AlunoDTO;
 import io.github.lucasifce.gamification.api.dto.matriculaTurma.AlunoTurmaRemoveListDTO;
+import io.github.lucasifce.gamification.api.dto.professor.ProfessorDTO;
 import io.github.lucasifce.gamification.api.dto.professor.ProfessorTurmaRemoveListDTO;
 import io.github.lucasifce.gamification.api.dto.turma.TrocaResponsavelTurmaDTO;
 import io.github.lucasifce.gamification.api.dto.turma.TrocaStatusTurmaDTO;
@@ -8,7 +10,10 @@ import io.github.lucasifce.gamification.api.dto.matriculaTurma.AlunoTurmaInsertL
 import io.github.lucasifce.gamification.api.dto.professor.ProfessorTurmaInsertListDTO;
 import io.github.lucasifce.gamification.api.dto.turma.TurmaDTO;
 
+import io.github.lucasifce.gamification.api.dto.turma.TurmaFindDTO;
 import io.github.lucasifce.gamification.domain.enums.StatusTurma;
+import io.github.lucasifce.gamification.domain.exception.EntidadeNaoEncontradaException;
+import io.github.lucasifce.gamification.domain.exception.ListaVaziaException;
 import io.github.lucasifce.gamification.domain.exception.NegocioListException;
 import io.github.lucasifce.gamification.domain.model.Aluno;
 import io.github.lucasifce.gamification.domain.model.MatriculaTurma;
@@ -20,11 +25,14 @@ import io.github.lucasifce.gamification.domain.repository.ProfessoresRepository;
 import io.github.lucasifce.gamification.domain.repository.TurmasRepository;
 import io.github.lucasifce.gamification.domain.service.TurmaService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class TurmaServiceImplementation implements TurmaService {
@@ -40,6 +48,34 @@ public class TurmaServiceImplementation implements TurmaService {
 
     @Autowired
     private MatriculasTurmaRepository matriculasTurmaRepository;
+
+    @Override
+    public List<TurmaFindDTO> findTurma(Turma filtro) {
+        ExampleMatcher exampleMatcher = ExampleMatcher
+                .matching()
+                .withIgnoreCase()
+                .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING);
+        Example example = Example.of(filtro, exampleMatcher);
+
+        List<Turma> turmas = turmasRepository.findAll(example);
+        if(!turmas.isEmpty()) {
+            return turmas.stream().map(turma -> converterTurmaFindDTO(turma))
+                    .collect(Collectors.toList());
+        } else {
+            throw new ListaVaziaException();
+        }
+    }
+
+    @Override
+    public TurmaFindDTO findTurmaByCodigo(String codigo){
+        Optional<Turma> turma = turmasRepository.findByCodigo(codigo);
+
+        if(!turma.isEmpty()) {
+            return converterTurmaFindDTO(turma.get());
+        } else {
+            throw new EntidadeNaoEncontradaException("Turma com esse código não encontrada.");
+        }
+    }
 
     @Override
     @Transactional
@@ -422,4 +458,39 @@ public class TurmaServiceImplementation implements TurmaService {
                 .build();
     }
 
+    /*mapeamento de turma para turmaFindDTO, utilizado para pesquisa por turma*/
+    private TurmaFindDTO converterTurmaFindDTO(Turma turma) {
+        return TurmaFindDTO.builder()
+                .id(turma.getId())
+                .codigo(turma.getCodigo())
+                .periodo(turma.getPeriodo())
+                .status(turma.getStatus())
+                .responsavel(converterProfessorDTO(turma.getResponsavelId()))
+                .alunos(turma.getAlunos().stream()
+                        .map(aluno -> converterAlunoDTO(aluno)).collect(Collectors.toList()))
+                .professores(turma.getProfessores().stream()
+                        .map(professor -> converterProfessorDTO(professor)).collect(Collectors.toList()))
+                .build();
+    }
+
+    /*metodo para mapear professor para professorDTO*/
+    private ProfessorDTO converterProfessorDTO(Professor professor) {
+        return ProfessorDTO.builder()
+                .id(professor.getId())
+                .nome(professor.getNome())
+                .email(professor.getEmail())
+                .telefone(professor.getTelefone())
+                .build();
+    }
+
+    /*metodo para mapear aluno para alunoDTO*/
+    private AlunoDTO converterAlunoDTO(Aluno aluno) {
+        return AlunoDTO.builder()
+                .id(aluno.getId())
+                .matricula(aluno.getMatricula())
+                .nome(aluno.getNome())
+                .email(aluno.getEmail())
+                .telefone(aluno.getTelefone())
+                .build();
+    }
 }
