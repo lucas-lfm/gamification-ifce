@@ -1,6 +1,7 @@
 package io.github.lucasifce.gamification.domain.service;
 
 import io.github.lucasifce.gamification.api.dto.aluno.AlunoDTO;
+import io.github.lucasifce.gamification.api.dto.aluno.AlunoTurmasDTO;
 import io.github.lucasifce.gamification.api.dto.aluno.AlunoUsuarioDTO;
 import io.github.lucasifce.gamification.api.dto.matriculaTurma.MatriculaTurmaDTO;
 import io.github.lucasifce.gamification.domain.model.Aluno;
@@ -9,11 +10,13 @@ import java.util.List;
 
 public interface AlunoService {
 
-    List<AlunoDTO> findAlunoDTO(Aluno filtro);
-    List<Aluno> findAluno(Aluno filtro);
+    List<AlunoTurmasDTO> findAlunoTurmas(Aluno filtro);
+    List<AlunoDTO> findAluno(Aluno filtro);
 
-    AlunoDTO getAlunoByMatriculaDTO(Long matricula);
-    Aluno getAlunoByMatricula(Long matricula);
+    AlunoTurmasDTO getAlunoTurmasByMatricula(Long matricula);
+    AlunoDTO getAlunoByMatricula(Long matricula);
+    
+    AlunoUsuarioDTO getAlunoPorId(Long id);
 
     AlunoUsuarioDTO save(Aluno aluno);
     AlunoDTO update(AlunoDTO dto, Long id);

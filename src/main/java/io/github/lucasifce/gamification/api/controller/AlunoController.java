@@ -1,6 +1,7 @@
 package io.github.lucasifce.gamification.api.controller;
 
 import io.github.lucasifce.gamification.api.dto.aluno.AlunoDTO;
+import io.github.lucasifce.gamification.api.dto.aluno.AlunoTurmasDTO;
 import io.github.lucasifce.gamification.api.dto.aluno.AlunoUsuarioDTO;
 import io.github.lucasifce.gamification.api.dto.matriculaTurma.MatriculaTurmaDTO;
 import io.github.lucasifce.gamification.api.dto.ranking.RankingListAlunoDTO;
@@ -26,23 +27,28 @@ public class AlunoController {
 	private RankingService rankingService;
 	
 	@GetMapping
-    public List<Aluno> findAluno(Aluno filtro){
+    public List<AlunoDTO> findAluno(Aluno filtro){
         return alunoService.findAluno(filtro);
     }
 
-	@GetMapping("/dto")
-	public List<AlunoDTO> findAlunoDTO(Aluno filtro){
-		return alunoService.findAlunoDTO(filtro);
+	@GetMapping("/turmas")
+	public List<AlunoTurmasDTO> findAlunoTurmas(Aluno filtro){
+		return alunoService.findAlunoTurmas(filtro);
+	}
+	
+	@GetMapping("/usuario/{id}")
+	public AlunoUsuarioDTO getAlunoUsuario(@PathVariable("id") Long id) {
+		return alunoService.getAlunoPorId(id);
 	}
 	
 	@GetMapping("/{matricula}")
-	public Aluno getAlunoByMatricula(@PathVariable("matricula") Long matricula){
+	public AlunoDTO getAlunoByMatricula(@PathVariable("matricula") Long matricula){
 		return alunoService.getAlunoByMatricula(matricula);
 	}
 
-	@GetMapping("/dto/{matricula}")
-	public AlunoDTO getAlunoByMatriculaDTO(@PathVariable("matricula") Long matricula){
-		return alunoService.getAlunoByMatriculaDTO(matricula);
+	@GetMapping("/turmas/{matricula}")
+	public AlunoTurmasDTO getAlunoByMatriculaDTO(@PathVariable("matricula") Long matricula){
+		return alunoService.getAlunoTurmasByMatricula(matricula);
 	}
 
 	@PostMapping

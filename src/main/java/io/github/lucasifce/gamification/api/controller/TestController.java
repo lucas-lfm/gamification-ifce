@@ -91,49 +91,6 @@ public class TestController {
 		return turmasRepository.save(turma);
 	}
 	
-	@PostMapping("/turmas/inserir-aluno")
-	@ResponseStatus(HttpStatus.CREATED)
-    @Transactional
-	public MatriculaTurma insertAluno(@RequestBody @Valid MatriculaTurmaDTO matriculaTurmaDTO) {
-		
-		Aluno aluno = alunosRepository.findById(matriculaTurmaDTO.getAlunoId())
-				.orElseThrow(() -> new EntidadeNaoEncontradaException("Aluno não encontrado!"));
-		
-		Turma turma = turmasRepository.findById(matriculaTurmaDTO.getTurmaId())
-				.orElseThrow(() -> new EntidadeNaoEncontradaException("Turma não encontrado!"));
-		
-		MatriculaTurma matriculaTurma = new MatriculaTurma();
-		matriculaTurma.setPontuacao(BigDecimal.valueOf(0L));
-		matriculaTurma.setAluno(aluno);
-		matriculaTurma.setTurma(turma);
-
-		return matriculasTurmaRepository.save(matriculaTurma);
-		
-	}
-	
-	@PostMapping("/turmas/inserir-alunos")
-	@ResponseStatus(HttpStatus.NO_CONTENT)
-    @Transactional
-    //Falta implementar regra de negócio para verificar se um aluno já está inserido na turma
-	public void insertAlunos(@RequestBody @Valid List<MatriculaTurmaDTO> matriculasTurmaDTO) {
-		
-		matriculasTurmaDTO.forEach( matriculaTurmaDTO -> {
-			Aluno aluno = alunosRepository.findById(matriculaTurmaDTO.getAlunoId())
-					.orElseThrow(() -> new EntidadeNaoEncontradaException("Aluno não encontrado!"));
-			
-			Turma turma = turmasRepository.findById(matriculaTurmaDTO.getTurmaId())
-					.orElseThrow(() -> new EntidadeNaoEncontradaException("Turma não encontrado!"));
-			
-			MatriculaTurma matriculaTurma = new MatriculaTurma();
-			matriculaTurma.setPontuacao(BigDecimal.valueOf(0L));
-			matriculaTurma.setAluno(aluno);
-			matriculaTurma.setTurma(turma);
-			
-			matriculasTurmaRepository.save(matriculaTurma);
-		});
-		
-	}
-	
 	@GetMapping("/ranking/{idTurma}")
 	public List<Ranking> buscarRankingPorTurma(@PathVariable Long idTurma){
 		return rankingsRepository.buscarPorTurma(idTurma);
